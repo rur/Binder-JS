@@ -1,0 +1,11 @@
+{
+  "name": "Binder_JS",
+  "version": "0.0.0",
+  "description": "Library to write file system parsers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ruaidhri Devery",
+  "license": "BSD-2-Clause"
+}
