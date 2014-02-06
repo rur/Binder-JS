@@ -43,6 +43,21 @@ describe("parser", function() {
         done();
       })
     });
+
+    it("should alow a parser delay rejecting the promise", function(done) {
+      parser = new p.Parser(test, function () {
+        var parser = this;
+        setTimeout(function() {
+          parser.error("some error");
+        }, 10);
+        return this.promise;
+      });
+      var prom = parser.parse();
+      prom.then(null, function (data) {
+        expect(data).toEqual("some error");
+        done();
+      })
+    });
   });
 });
 
