@@ -20,7 +20,7 @@ describe("parser", function() {
 
     it("should notify of errors", function(done) {
       parser = new p.Parser(test, function () {
-        this.error("some error message");
+        this.reject("some error message");
       })
       var prom = parser.parse();
       prom.then(null, function (data) {
@@ -29,7 +29,7 @@ describe("parser", function() {
       });
     });
 
-    it("should alow a parser delay resolving the promise", function(done) {
+    it("should allow a parser delay resolving the promise", function(done) {
       parser = new p.Parser(test, function () {
         var parser = this;
         setTimeout(function() {
@@ -44,11 +44,11 @@ describe("parser", function() {
       })
     });
 
-    it("should alow a parser delay rejecting the promise", function(done) {
+    it("should allow a parser delay rejecting the promise", function(done) {
       parser = new p.Parser(test, function () {
         var parser = this;
         setTimeout(function() {
-          parser.error("some error");
+          parser.reject("some error");
         }, 10);
         return this.promise;
       });
