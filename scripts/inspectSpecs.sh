@@ -1,0 +1,1 @@
+node --debug-brk /usr/local/lib/node_modules/jasmine-node/lib/jasmine-node/cli.js .
