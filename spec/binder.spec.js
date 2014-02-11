@@ -25,6 +25,15 @@ describe("binder", function() {
     }, getFailSpy(this, "promise was rejected", done));
   });
 
+  xit("should parse another individual file", function (done) {
+    binder.compile({
+      path: path.resolve(__dirname, "fixtures/test_2.txt")
+    }).then(function (data) {
+      expect(data).toEqual("this is another test");
+      done();
+    }, getFailSpy(this, "promise was rejected", done));
+  });
+
   xit("should parse a file in a directory", function(done) {
     binder.compile({
       path: path.resolve(__dirname, "fixtures/simpleDir/"),
