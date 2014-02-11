@@ -55,5 +55,23 @@ describe("promise", function() {
         expect(rej).wasCalledWith("test");
       });
     });
+
+    describe("null handlers", function() {
+      beforeEach(function() {
+        promise.then();
+      });
+
+      it("should ignore null resolve handler", function() {
+        expect(function () {
+          ctrl.resolve();
+        }).not.toThrow("TypeError: undefined is not a function");
+      });
+
+      it("should ignore null resolve handler", function() {
+        expect(function () {
+          ctrl.reject();
+        }).not.toThrow("TypeError: undefined is not a function");
+      });
+    });
   });
 });
