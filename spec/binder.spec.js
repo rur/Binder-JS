@@ -3,17 +3,9 @@ var path = require("path");
 
 
 describe("binder", function() {
-  var binder, getFailSpy;
+  var binder;
   beforeEach(function() {
     binder = new b.Binder();
-    getFailSpy = function (test, msg, done) {
-      var spy = jasmine.createSpy("FAIL");
-      spy.andCallFake(function () {
-        test.fail(msg);
-        if (typeof done === "function") done();
-      });
-      return spy;
-    }
   });
 
   it("should parse an individual file", function (done) {
@@ -23,6 +15,7 @@ describe("binder", function() {
       expect(data).toEqual("this is a test");
       done();
     }, getFailSpy(this, "promise was rejected", done));
+
   });
 
   xit("should parse another individual file", function (done) {

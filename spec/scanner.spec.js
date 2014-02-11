@@ -4,90 +4,126 @@ var path = require("path");
 var fs = require("fs");
 
 
-describe("scanner", function() {
+describe("scanner#scanFile", function() {
   var fp;
   beforeEach(function() {
     fp = path.resolve(__dirname, "fixtures/test.txt");
   });
 
-  it("should read a file", function(done) {
-    fs.readFile(fp, "utf-8", function (err, data) {
-      expect(data).toEqual("this is a test file");
-      done();
+  describe("parsing", function() {
+    it("should take a context and return the parsed data", function(done) {
+      scanner.scanFile(fp, {filters: [], parsers: []})
+        .then(null, function (error) {
+          expect(error).toBe("No parser found");
+          done();
+        });
     });
-  });
 
-  it("should take a context and return the parsed data", function(done) {
-    scanner.scan(fp ,{parsers: []}).then(null, function (error) {
-      expect(error).toBe("No parser found");
-      done();
+    it("should get the data from the parser function", function() {
+      var handler = jasmine.createSpy("Scan file handler");
+      scanner.scanFile(fp, {
+          filters: [],
+          parsers: [
+          new p.Parser(function test () {
+              return false;
+            }, function parse (file_path) {
+              return "something went wrong";
+            }),
+          new p.Parser(function test () {
+              return true;
+            }, function parse (file_path) {
+              return "some data";
+            })
+          ]
+        }).then(handler);
+      expect(handler).wasCalledWith("some data");
     });
-  });
 
-  it("should get the data from the parser function", function() {
-    var handler = jasmine.createSpy("Scan file handler");
-    scanner.scan(fp, {
+    it("should get data from a file", function(done) {
+      scanner.scanFile(fp, {
+        filters: [],
         parsers: [
-        new p.Parser(function test () {
-            return false;
-          }, function parse (file_path) {
-            return "something went wrong";
-          }),
-        new p.Parser(function test () {
+          new p.Parser(function () {
             return true;
-          }, function parse (file_path) {
-            return "some data";
+          },
+          function (file_path) {
+            var parser = this;
+            fs.readFile(file_path, "utf-8", function (err, data) {
+              if (err) {
+                parser.reject(err);
+                return;
+              };
+              parser.resolve(data);
+            });
+            return this.promise;
           })
         ]
-      }).then(handler);
-    expect(handler).wasCalledWith("some data");
-  });
+      }).then(function (data) {
+        expect(data).toEqual("this is a test file");
+        done();
+      });
+    });
 
-  it("should get data from a file", function(done) {
-    scanner.scan(fp, {
-      parsers: [
-        new p.Parser(function () {
-          return true;
-        },
-        function (file_path) {
-          var parser = this;
-          fs.readFile(file_path, "utf-8", function (err, data) {
-            if (err) {
-              parser.reject(err);
-              return;
-            };
-            parser.resolve(data);
-          });
-          return this.promise;
-        })
-      ]
-    }).then(function (data) {
-      expect(data).toEqual("this is a test file");
-      done();
+    it("should pass a file read error onto the reject handler", function(done) {
+      scanner.scanFile(fp, {
+        filters: [],
+        parsers: [
+          new p.Parser(function () {
+            return true;
+          },
+          function (file_path) {
+            var parser = this;
+            fs.readFile("non-existent-file.txt", function (err, data) {
+              if (err) {
+                parser.reject(err);
+                return;
+              };
+              parser.resolve(data);
+            });
+            return this.promise;
+          })
+        ]
+      }).then(null, function (data) {
+        expect(data.toString()).toEqual("Error: ENOENT, open 'non-existent-file.txt'");
+        done();
+      });
     });
   });
 
-  it("should pass a file read error onto the reject handler", function(done) {
-    scanner.scan(fp, {
-      parsers: [
-        new p.Parser(function () {
-          return true;
-        },
-        function (file_path) {
-          var parser = this;
-          fs.readFile("non-existent-file.txt", function (err, data) {
-            if (err) {
-              parser.reject(err);
-              return;
-            };
-            parser.resolve(data);
-          });
-          return this.promise;
-        })
-      ]
-    }).then(null, function (data) {
-      expect(data.toString()).toEqual("Error: ENOENT, open 'non-existent-file.txt'");
-      done();
+  describe("filters", function() {
+    var filter, cxt, parse;
+    beforeEach(function() {
+      filter = jasmine.createSpy("Filter");
+      parse = jasmine.createSpy("Parser");
+      cxt = {
+        filters: [filter],
+        parsers: [new p.Parser(function () { return true; }, parse)]
+      };
+    });
+
+    it("should call a filter on a file", function() {
+      scanner.scanFile(fp, cxt);
+      expect(filter).wasCalledWith(fp, cxt);
+    });
+
+    it("should trigger an error", function() {
+      var rejSpy = jasmine.createSpy("Error handler");
+      filter.andCallFake(function () {
+        this.error = "test error";
+      });
+      scanner.scanFile(fp, cxt).then(null, rejSpy);
+      expect(rejSpy).wasCalledWith("test error");
+      expect(parse).not.toHaveBeenCalled();
+    });
+
+    it("should cause file to be ignored", function() {
+      var resSpy = jasmine.createSpy("Resolve Spy");
+      filter.andCallFake(function () {
+        this.ignore = true;
+      });
+      scanner.scanFile(fp, cxt).then(resSpy);
+      expect(resSpy).toHaveBeenCalledWith(undefined);
+      expect(parse).not.toHaveBeenCalled();
     });
   });
 });
