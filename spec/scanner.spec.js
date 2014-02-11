@@ -18,13 +18,11 @@ describe("scanner", function() {
   });
 
   it("should take a context and return the parsed data", function(done) {
-    scanner.scan(fp ,{}, function (error, data) {
+    scanner.scan(fp ,{parsers: []}).then(null, function (error) {
       expect(error).toBe("No parser found");
-      expect(data).not.toBeDefined();
       done();
     });
   });
-
 
   it("should get the data from the parser function", function() {
     var handler = jasmine.createSpy("Scan file handler");
@@ -41,10 +39,8 @@ describe("scanner", function() {
             return "some data";
           })
         ]
-
-      },
-      handler);
-    expect(handler).wasCalledWith(null, "some data");
+      }).then(handler);
+    expect(handler).wasCalledWith("some data");
   });
 
   it("should get data from a file", function(done) {
@@ -55,25 +51,42 @@ describe("scanner", function() {
         },
         function (file_path) {
           var parser = this;
-          try {
-            fs.readFile(file_path, "utf-8", function (err, data) {
-              if (err) {
-                parser.reject(err);
-                return;
-              };
-              parser.resolve(data);
-            });
-          } catch (er) {
-            parser.reject("Error reading file: "+er);
-          }
+          fs.readFile(file_path, "utf-8", function (err, data) {
+            if (err) {
+              parser.reject(err);
+              return;
+            };
+            parser.resolve(data);
+          });
           return this.promise;
         })
       ]
-    },
-    // handler
-    function (err, data) {
+    }).then(function (data) {
       expect(data).toEqual("this is a test file");
-      expect(err).toBeNull();
+      done();
+    });
+  });
+
+  it("should pass a file read error onto the reject handler", function(done) {
+    scanner.scan(fp, {
+      parsers: [
+        new p.Parser(function () {
+          return true;
+        },
+        function (file_path) {
+          var parser = this;
+          fs.readFile("non-existent-file.txt", function (err, data) {
+            if (err) {
+              parser.reject(err);
+              return;
+            };
+            parser.resolve(data);
+          });
+          return this.promise;
+        })
+      ]
+    }).then(null, function (data) {
+      expect(data.toString()).toEqual("Error: ENOENT, open 'non-existent-file.txt'");
       done();
     });
   });
