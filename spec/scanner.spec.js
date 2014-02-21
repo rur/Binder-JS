@@ -88,6 +88,19 @@ describe("scanner#scanFile", function() {
         done();
       });
     });
+
+    it("should test last in parsers first", function() {
+      var cx = {
+        filters: [],
+        parsers: [
+          new p.Parser(jasmine.createSpy("true test"), jasmine.createSpy("target parser")),
+          new p.Parser(jasmine.createSpy("false test"))
+        ]
+      };
+      cx.parsers[0].test.andReturn(true);
+      scanner.scanFile(fp, cx);
+      expect(cx.parsers[1].test).wasCalled();
+    });
   });
 
   describe("filters", function() {
