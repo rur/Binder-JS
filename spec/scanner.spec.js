@@ -122,7 +122,7 @@ describe("scanner#scanFile", function() {
     it("should trigger an error", function() {
       var rejSpy = jasmine.createSpy("Error handler");
       filter.andCallFake(function () {
-        this.error = "test error";
+        this.reject("test error");
       });
       scanner.scanFile(fp, cxt).then(null, rejSpy);
       expect(rejSpy).wasCalledWith("test error");
@@ -132,9 +132,9 @@ describe("scanner#scanFile", function() {
     it("should cause file to be ignored", function() {
       var resSpy = jasmine.createSpy("Resolve Spy");
       filter.andCallFake(function () {
-        this.ignore = true;
+        this.reject();
       });
-      scanner.scanFile(fp, cxt).then(resSpy);
+      scanner.scanFile(fp, cxt).then(null, resSpy);
       expect(resSpy).toHaveBeenCalledWith(undefined);
       expect(parse).not.toHaveBeenCalled();
     });
