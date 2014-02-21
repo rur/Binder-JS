@@ -114,4 +114,47 @@ describe("promise", function() {
     });
   });
 
+  describe("callAsync", function() {
+    var spy;
+    beforeEach(function() {
+      spy = jasmine.createSpy();
+      spy.andReturn("test");
+    });
+
+    it("should call a function returning a promise", function(done) {
+      p.callAsync(spy)
+        .then(function (data) {
+          expect(data).toEqual("test");
+          done();
+        });
+    });
+
+    it("should pass args", function() {
+      p.callAsync(spy, 1, 2, 3);
+      expect(spy).wasCalledWith(1,2,3);
+    });
+
+    it("should allow the function to respond with a promise", function(done) {
+      spy.andCallFake(function () {
+        this.resolve("test");
+        return this.promise;
+      });
+      p.callAsync(spy)
+        .then(function (data) {
+          expect(data).toEqual("test");
+          done();
+        });
+    });
+
+    it("should allow the function reject the promise and return nothing", function(done) {
+      spy.andCallFake(function () {
+        this.reject("it was rejected");
+      });
+      p.callAsync(spy)
+        .then(null, function (data) {
+          expect(data).toEqual("it was rejected");
+          done();
+        })
+    });
+  });
 });
