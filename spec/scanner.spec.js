@@ -139,4 +139,17 @@ describe("scanner#scanFile", function() {
       expect(parse).not.toHaveBeenCalled();
     });
   });
+
+  describe("errors", function() {
+    it("should timeout", function(done) {
+      scanner.scanFile(fp, {filters: [], parsers: [
+        new p.Parser(function () { return true; }, function () {
+          return this.promise;
+        })
+      ]}, 10).then(null, function (err) {
+        expect(err).toEqual("File scan timed out after 10 msec");
+        done();
+      });
+    });
+  });
 });
