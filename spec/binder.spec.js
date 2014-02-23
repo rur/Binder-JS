@@ -81,7 +81,7 @@ describe("binder", function() {
     });
   });
 
-  xit("should parse a file in a directory", function(done) {
+  it("should parse a file in a directory", function(done) {
     var spec = this;
     binder.compile(path.resolve(__dirname, "fixtures/simpleDir/"))
     .then(function (data) {
