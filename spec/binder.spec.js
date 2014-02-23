@@ -81,17 +81,35 @@ describe("binder", function() {
     });
   });
 
-  it("should parse a file in a directory", function(done) {
-    var spec = this;
-    binder.compile(path.resolve(__dirname, "fixtures/simpleDir/"))
-    .then(function (data) {
-      expect(data).toEqual({
-        test: "this is a test file in a folder"
+  describe("compiling a directory", function() {
+    it("should parse a file in a directory", function(done) {
+      var spec = this;
+      binder.compile(path.resolve(__dirname, "fixtures/simpleDir/"))
+      .then(function (data) {
+        expect(data).toEqual({
+          test: "this is a test file in a folder"
+        });
+        done();
+      }, function (data) {
+        spec.fail(data);
+        done();
       });
-      done();
-    }, function (data) {
-      spec.fail(data);
-      done();
     });
+
+    it("should parse data in ", function(done) {
+      var spec = this;
+      binder.compile(path.resolve(__dirname, "fixtures/nestedData/"))
+      .then(function (data) {
+        expect(data.subDir).toEqual({
+          test: "this is another text file inside a sub directory"
+        });
+        done();
+      }, function (data) {
+        spec.fail(data);
+        done();
+      });
+    });
+
   });
+
 });
