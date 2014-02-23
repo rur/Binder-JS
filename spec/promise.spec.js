@@ -20,7 +20,7 @@ describe("promise", function() {
     expect(promise.name).toEqual("Test promise");
   });
 
-  describe("calling handlers", function() {
+  describe("calling then handlers", function() {
     var res, rej;
     beforeEach(function() {
       res = jasmine.createSpy("Promise resolve handler");
@@ -114,6 +114,37 @@ describe("promise", function() {
     });
   });
 
+
+  describe("ctrl#handle", function() {
+    it("should return a handle", function(done) {
+      var handle = ctrl.handle(function (arg) {
+        this.resolve("deferred " + arg);
+      });
+      ctrl.promise.then(function (data) {
+        expect(data).toEqual("deferred 123");
+        done();
+      });
+      handle(123);
+    });
+
+    it("should return the return value of the deferred function", function() {
+      expect(ctrl.handle(function () {
+        return "test";
+      })()).toEqual("test");
+    });
+
+    it("should catch an error and reject promise with it", function(done) {
+      var handle = ctrl.handle(function () {
+        throw "later error";
+      });
+      ctrl.promise.then(null, function (err) {
+        expect(err).toEqual("later error");
+        done();
+      });
+      handle();
+    });
+  });
+
   describe("callAsync", function() {
     var spy;
     beforeEach(function() {
@@ -155,6 +186,21 @@ describe("promise", function() {
           expect(data).toEqual("it was rejected");
           done();
         })
+    });
+
+    it("should catch an error and reject the promise", function(done) {
+      spy.andCallFake(function () {
+        throw "some error";
+      });
+      p.callAsync(spy)
+      .then(null, function (data) {
+        expect(data).toEqual("some error");
+        done();
+      });
+    });
+
+    it("should catch an error in a ", function() {
+
     });
   });
 });
