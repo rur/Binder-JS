@@ -1,12 +1,12 @@
-var b = require("../lib/binder");
-var p = require("../lib/parser");
+var Binder = require("../lib/binder");
+var Parser = require("../lib/parser");
 var path = require("path");
 
 
 describe("binder", function() {
   var binder;
   beforeEach(function() {
-    binder = new b.Binder();
+    binder = new Binder();
   });
 
   describe("compiling a single file", function() {
@@ -29,7 +29,7 @@ describe("binder", function() {
 
     it("should timeout with a faulty parser", function(done) {
       binder.compileTimeout = 10; // just to make the test run faster
-      binder.context.parsers.push(new p.Parser(function () {
+      binder.context.parsers.push(new Parser(function () {
         return true;
       }, function () {
 
@@ -53,7 +53,7 @@ describe("binder", function() {
 
     describe("faulty parser", function() {
       it("should catch and reject an error in a parser", function(done) {
-        binder.context.parsers.push(new p.Parser(function () { return true; },
+        binder.context.parsers.push(new Parser(function () { return true; },
             function () {
               throw "error"
             }));
@@ -65,7 +65,7 @@ describe("binder", function() {
       });
 
       it("should catch and reject an error in a parser", function(done) {
-        binder.context.parsers.push(new p.Parser(function () { return true; },
+        binder.context.parsers.push(new Parser(function () { return true; },
             function () {
               setTimeout(this.handle(function () {
                 throw "some error";

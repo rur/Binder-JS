@@ -1,8 +1,8 @@
-var p = require("../lib/parser");
+var Parser = require("../lib/parser");
 
 describe("parser", function() {
   beforeEach(function() {
-    parser = new p.Parser(test, parse);
+    parser = new Parser(test, parse);
   });
 
   it("should pass the test function to itself", function() {
@@ -19,7 +19,7 @@ describe("parser", function() {
     });
 
     it("should notify of errors", function(done) {
-      parser = new p.Parser(test, function () {
+      parser = new Parser(test, function () {
         this.reject("some error message");
       })
       var prom = parser.parse();
@@ -30,7 +30,7 @@ describe("parser", function() {
     });
 
     it("should allow a parser delay resolving the promise", function(done) {
-      parser = new p.Parser(test, function () {
+      parser = new Parser(test, function () {
         var parser = this;
         setTimeout(function() {
           parser.resolve("some data");
@@ -45,7 +45,7 @@ describe("parser", function() {
     });
 
     it("should allow a parser delay rejecting the promise", function(done) {
-      parser = new p.Parser(test, function () {
+      parser = new Parser(test, function () {
         var parser = this;
         setTimeout(function() {
           parser.reject("some error");

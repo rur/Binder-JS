@@ -1,5 +1,5 @@
 var scanner = require("../lib/scanner");
-var p = require("../lib/parser");
+var Parser = require("../lib/parser");
 var path = require("path");
 var fs = require("fs");
 
@@ -24,12 +24,12 @@ describe("scanner#scanFile", function() {
       scanner.scanFile(fp, {
           filters: [],
           parsers: [
-          new p.Parser(function test () {
+          new Parser(function test () {
               return false;
             }, function parse (file_path) {
               return "something went wrong";
             }),
-          new p.Parser(function test () {
+          new Parser(function test () {
               return true;
             }, function parse (file_path) {
               return "some data";
@@ -43,7 +43,7 @@ describe("scanner#scanFile", function() {
       scanner.scanFile(fp, {
         filters: [],
         parsers: [
-          new p.Parser(function () {
+          new Parser(function () {
             return true;
           },
           function (file_path) {
@@ -68,7 +68,7 @@ describe("scanner#scanFile", function() {
       scanner.scanFile(fp, {
         filters: [],
         parsers: [
-          new p.Parser(function () {
+          new Parser(function () {
             return true;
           },
           function (file_path) {
@@ -93,8 +93,8 @@ describe("scanner#scanFile", function() {
       var cx = {
         filters: [],
         parsers: [
-          new p.Parser(jasmine.createSpy("true test"), jasmine.createSpy("target parser")),
-          new p.Parser(jasmine.createSpy("false test"))
+          new Parser(jasmine.createSpy("true test"), jasmine.createSpy("target parser")),
+          new Parser(jasmine.createSpy("false test"))
         ]
       };
       cx.parsers[0].test.andReturn(true);
@@ -110,7 +110,7 @@ describe("scanner#scanFile", function() {
       parse = jasmine.createSpy("Parser");
       cxt = {
         filters: [filter],
-        parsers: [new p.Parser(function () { return true; }, parse)]
+        parsers: [new Parser(function () { return true; }, parse)]
       };
     });
 
@@ -143,7 +143,7 @@ describe("scanner#scanFile", function() {
   describe("errors", function() {
     it("should timeout", function(done) {
       scanner.scanFile(fp, {filters: [], parsers: [
-        new p.Parser(function () { return true; }, function () {
+        new Parser(function () { return true; }, function () {
           return this.promise;
         })
       ]}, 10).then(null, function (err) {
