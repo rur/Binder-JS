@@ -1,6 +1,6 @@
-exports.getFailSpy = function (test, msg, done) {
-  return function () {
-    test.fail(msg);
+exports.getFailSpy = function (test, done) {
+  return function (data) {
+    test.fail("Promise was rejected with msg: " + data);
     if (typeof done === "function") done();
   };
 };
