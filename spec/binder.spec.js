@@ -87,7 +87,7 @@ describe("binder", function() {
       binder.compile(path.resolve(__dirname, "fixtures/simpleDir/"))
       .then(function (data) {
         expect(data).toEqual({
-          test: "this is a test file in a folder"
+          "test.txt": "this is a test file in a folder"
         });
         done();
       }, function (data) {
@@ -101,7 +101,7 @@ describe("binder", function() {
       binder.compile(path.resolve(__dirname, "fixtures/nestedData/"))
       .then(function (data) {
         expect(data.subDir).toEqual({
-          test: "this is another text file inside a sub directory"
+          "test.txt": "this is another text file inside a sub directory"
         });
         done();
       }, function (data) {
