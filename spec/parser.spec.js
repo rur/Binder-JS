@@ -1,7 +1,10 @@
 var Parser = require("../lib/parser");
 
 describe("parser", function() {
+  var test, parse;
   beforeEach(function() {
+    test = function () {};
+    parse = function () {};
     parser = new Parser(test, parse);
   });
 
@@ -9,7 +12,11 @@ describe("parser", function() {
     expect(parser.test).toBe(test);
   });
 
-  describe("#parse", function() {
+  it("should pass the parse function to itself", function() {
+    expect(parser.parse).toBe(parse);
+  });
+
+  xdescribe("#parse", function() {
     it("should return a promise", function(done) {
       var prom = parser.parse();
       prom.then(function (data) {
