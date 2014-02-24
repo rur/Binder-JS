@@ -5,7 +5,7 @@ var path = require("path");
 var fs = require("fs");
 
 /*
-  Binder Jasmine Specs
+  Binder mid-level integration specs
  */
 describe("binder", function() {
   var binder;
@@ -32,56 +32,54 @@ describe("binder", function() {
       }, getFailSpy(this, done));
     });
 
-    it("should timeout with a faulty parser", function(done) {
-      binder.compileTimeout = 10; // just to make the test run faster
-      binder.context.parsers.push(new Parser(function () {
-        return true;
-      }, function () {
+    describe("fault handling", function() {
+      it("should error with a faulty path", function(done) {
+        binder.compile("non/existent/file.txt").then(null,
+          function (data) {
+            expect(data.toString()).toEqual("Error: ENOENT, stat 'non/existent/file.txt'");
+            done();
+          });
+      });
 
-        // Faulty parser. ie. it doesn't ever complete the promise
-        return this.promise;
-      }));
-      binder.compile(path.resolve(__dirname, "fixtures/test_2.txt"))
-        .then(null, function (data) {
-          expect(data).toEqual("File scan timed out after 10 msec");
-          done();
+      it("should timeout an unresolved promise", function(done) {
+        binder.compileTimeout = 10; // just to make the test run faster
+        binder.parse(function () {
+          return true;
+        }, function () {
+          // Faulty parser. ie. it doesn't ever complete the promise
+          return this.promise;
         });
-    });
-
-    it("should error with a faulty path", function(done) {
-      binder.compile("non/existent/file.txt").then(null,
-        function (data) {
-          expect(data.toString()).toEqual("Error: ENOENT, stat 'non/existent/file.txt'");
-          done();
-        });
-    });
-
-    describe("faulty parser", function() {
-      it("should catch and reject an error in a parser", function(done) {
-        binder.context.parsers.push(new Parser(function () { return true; },
-            function () {
-              throw "error"
-            }));
-        binder.compile(path.resolve(__dirname, "fixtures/test.txt"))
-        .then(null, function (err) {
-          expect(err.toString()).toEqual("error");
-          done();
-        });
+        binder.compile(path.resolve(__dirname, "fixtures/test_2.txt"))
+          .then(null, function (data) {
+            expect(data).toEqual("File scan timed out after 10 msec");
+            done();
+          });
       });
 
       it("should catch and reject an error in a parser", function(done) {
-        binder.context.parsers.push(new Parser(function () { return true; },
+        binder.parse(function () { return true; },
             function () {
               setTimeout(this.handle(function () {
                 throw "some error";
               }), 10);
               return this.promise;
-            }));
+            });
         binder.compile(path.resolve(__dirname, "fixtures/test.txt"))
         .then(null, function (err) {
           expect(err.toString()).toEqual("some error");
           done();
         });
+      });
+
+      it("should catch and reject an error in a filter", function(done) {
+        binder.filter(function () {
+          throw "some filter error";
+        });
+        binder.compile(path.resolve(__dirname, "fixtures/test.txt"))
+        .then(null, function (err) {
+          expect(err).toEqual("some filter error");
+          done();
+        })
       });
     });
   });
@@ -121,7 +119,7 @@ describe("binder", function() {
 ///////////////////
 //// Spec Helpers
 //
-// Add filters and parers for tests
+// Add filters and parsers for tests
 function configForTests (binder) {
   // create file property in context
   binder.filter(function (pth, cxt) {
