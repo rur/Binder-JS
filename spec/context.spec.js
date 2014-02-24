@@ -1,9 +1,9 @@
-var c = require("../lib/context");
+var Context = require("../lib/context");
 
-describe("c.Context", function() {
+describe("Context", function() {
   var cxt;
   beforeEach(function() {
-    cxt = new c.Context();
+    cxt = new Context();
     cxt.test = "value";
   });
 
@@ -22,7 +22,7 @@ describe("c.Context", function() {
     });
 
     it("should create Context instance", function() {
-      expect(dup).toEqual(jasmine.any(c.Context));
+      expect(dup).toEqual(jasmine.any(Context));
     });
 
     it("should copy the filters array", function() {
