@@ -17,27 +17,47 @@ describe("rule", function() {
   });
 
   describe("#parse", function() {
+    var test, parse;
+    beforeEach(function() {
+      test = function() {};
+      parse = function() {};
+    });
+
     it("should register a new parser with the context", function() {
-      function test () {
-        // body...
-      }
-      function parse () {
-        // body...
-      }
       rule.parse(test, parse);
 
       expect(parsers[0].test).toBe(test);
-      expect(parsers[0]._parse).toBe(parse);
+      expect(parsers[0].parse).toBe(parse);
+    });
+
+    it("should allow you to add a read function manually", function() {
+      rule.parse(test).read(parse);
+
+      expect(parsers[0].test).toBe(test);
+      expect(parsers[0].parse).toBe(parse);
+    });
+
+    it("should allow you to define a predicate and task manually", function() {
+      rule.parse.when(test).read(parse);
+
+      expect(parsers[0].test).toBe(test);
+      expect(parsers[0].parse).toBe(parse);
     });
   });
 
   describe("#filter", function() {
-    it("should add a fitler", function() {
-      function filter () {
-        "mock";
-      }
+    it("should add a filter", function() {
+      function filter () {}
       rule.filter(filter);
       expect(filters[0]).toBe(filter);
     });
+  });
+
+  xdescribe("#definePredicate", function() {
+
+  });
+
+  xdescribe("#defineProcess", function() {
+
   });
 });
