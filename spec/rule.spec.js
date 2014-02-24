@@ -26,8 +26,18 @@ describe("rule", function() {
       }
       rule.parse(test, parse);
 
-      expect(parsers[parsers.length - 1].test).toBe(test);
-      expect(parsers[parsers.length - 1]._parse).toBe(parse);
+      expect(parsers[0].test).toBe(test);
+      expect(parsers[0]._parse).toBe(parse);
+    });
+  });
+
+  describe("#filter", function() {
+    it("should add a fitler", function() {
+      function filter () {
+        "mock";
+      }
+      rule.filter(filter);
+      expect(filters[0]).toBe(filter);
     });
   });
 });
