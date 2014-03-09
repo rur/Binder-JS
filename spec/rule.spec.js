@@ -1,5 +1,11 @@
 var Rule = require("../lib/rule");
 
+/////////////////////////////////////////////////////////
+// NB:  The following is a stub implementation
+//      It will be replaced once the Definition and
+//      Syntax implementations are worked out
+/////////////////////////////////////////////////////////
+
 describe("rule", function() {
   var rule, cxt, parsers, filters;
   beforeEach(function() {
