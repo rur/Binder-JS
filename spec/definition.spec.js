@@ -1,18 +1,19 @@
 var Definition = require("../lib/definition");
+var Syntax = require("../lib/syntax");
 
 
 describe("Definition", function() {
   var def;
   beforeEach(function() {
-    def = new Definition("test", ["dep"]);
+    def = new Definition("test");
   });
 
   it("should create a definition", function() {
     expect(def.name).toEqual("test");
   });
 
-  it("should store list of dependent definition names", function() {
-    expect(def.deps).toEqual(["dep"]);
+  it("should create an empty list of dependencies", function() {
+    expect(def.deps).toEqual([]);
   });
 
   it("should have an object for parsers", function() {
@@ -71,6 +72,12 @@ describe("Definition", function() {
       var spy = jasmine.createSpy("init");
       def.init(spy);
       expect(def.inits[0]).toBe(spy);
+    });
+  });
+
+  describe("buildSyntax", function() {
+    it("should create syntax file", function() {
+      expect(def.buildSyntax()).toEqual(jasmine.any(Syntax));
     });
   });
 });
