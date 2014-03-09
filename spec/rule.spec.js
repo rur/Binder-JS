@@ -17,30 +17,30 @@ describe("rule", function() {
   });
 
   describe("#parse", function() {
-    var test, parse;
+    var condition, parse;
     beforeEach(function() {
-      test = function() {};
+      condition = function() {};
       parse = function() {};
     });
 
     it("should register a new parser with the context", function() {
-      rule.parse(test, parse);
+      rule.parse(condition, parse);
 
-      expect(parsers[0].test).toBe(test);
+      expect(parsers[0].condition).toBe(condition);
       expect(parsers[0].parse).toBe(parse);
     });
 
     it("should allow you to add a read function manually", function() {
-      rule.parse(test).read(parse);
+      rule.parse(condition).read(parse);
 
-      expect(parsers[0].test).toBe(test);
+      expect(parsers[0].condition).toBe(condition);
       expect(parsers[0].parse).toBe(parse);
     });
 
     it("should allow you to define a predicate and task manually", function() {
-      rule.parse.when(test).read(parse);
+      rule.parse.when(condition).read(parse);
 
-      expect(parsers[0].test).toBe(test);
+      expect(parsers[0].condition).toBe(condition);
       expect(parsers[0].parse).toBe(parse);
     });
   });

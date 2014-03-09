@@ -20,19 +20,19 @@ describe("Definition", function() {
     expect(def.parsers).toEqual({});
   });
 
-  it("should have an object for predicates", function() {
-    expect(def.tests).toEqual({});
+  it("should have an object for conditions", function() {
+    expect(def.conditions).toEqual({});
   });
 
   it("should have an array for init functions", function() {
     expect(def.inits).toEqual([]);
   });
 
-  describe("#preParser", function() {
+  describe("#parser", function() {
     var spy, pDef;
     beforeEach(function() {
       spy = jasmine.createSpy("Pre Parser");
-      def.preParser("test", "base", spy);
+      def.parser("test", "base", spy);
       pDef = def.parsers.test;
     });
 
@@ -50,20 +50,20 @@ describe("Definition", function() {
 
     it("should capture two parameter only call", function() {
       var spy2 = jasmine.createSpy("Second Pre Parser");
-      def.preParser("test_2", spy2);
+      def.parser("test_2", spy2);
       expect(def.parsers.test_2.parser).toBe(spy2);
     });
   });
 
-  describe("#predicate", function() {
+  describe("#condition", function() {
     var spy;
     beforeEach(function() {
       spy = jasmine.createSpy("Test Predicate");
-      def.predicate("tester", spy);
+      def.condition("tester", spy);
     });
 
-    it("should add a predicate", function() {
-      expect(def.tests.tester.test).toBe(spy);
+    it("should add a condition", function() {
+      expect(def.conditions.tester.test).toBe(spy);
     });
   });
 
@@ -76,6 +76,12 @@ describe("Definition", function() {
   });
 
   describe("buildSyntax", function() {
+    var depDef;
+    beforeEach(function() {
+      depDef = new Definition("dep def");
+      def = new Definition("test", [depDef]);
+    });
+
     it("should create syntax file", function() {
       expect(def.buildSyntax()).toEqual(jasmine.any(Syntax));
     });

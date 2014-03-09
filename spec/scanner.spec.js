@@ -97,9 +97,9 @@ describe("scanner#scanFile", function() {
           new Parser(jasmine.createSpy("false test"))
         ]
       };
-      cx.parsers[0].test.andReturn(true);
+      cx.parsers[0].condition.andReturn(true);
       scanner.scanFile(fp, cx);
-      expect(cx.parsers[1].test).wasCalled();
+      expect(cx.parsers[1].condition).wasCalled();
     });
   });
 

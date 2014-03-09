@@ -1,15 +1,15 @@
 var Parser = require("../lib/parser");
 
 describe("parser", function() {
-  var test, parse;
+  var condition, parse;
   beforeEach(function() {
-    test = function () {};
+    condition = function () {};
     parse = function () {};
-    parser = new Parser(test, parse);
+    parser = new Parser(condition, parse);
   });
 
-  it("should pass the test function to itself", function() {
-    expect(parser.test).toBe(test);
+  it("should pass the condition function to itself", function() {
+    expect(parser.condition).toBe(condition);
   });
 
   it("should pass the parse function to itself", function() {
@@ -26,7 +26,7 @@ describe("parser", function() {
     });
 
     it("should notify of errors", function(done) {
-      parser = new Parser(test, function () {
+      parser = new Parser(condition, function () {
         this.reject("some error message");
       })
       var prom = parser.parse();
@@ -37,7 +37,7 @@ describe("parser", function() {
     });
 
     it("should allow a parser delay resolving the promise", function(done) {
-      parser = new Parser(test, function () {
+      parser = new Parser(condition, function () {
         var parser = this;
         setTimeout(function() {
           parser.resolve("some data");
@@ -52,7 +52,7 @@ describe("parser", function() {
     });
 
     it("should allow a parser delay rejecting the promise", function(done) {
-      parser = new Parser(test, function () {
+      parser = new Parser(condition, function () {
         var parser = this;
         setTimeout(function() {
           parser.reject("some error");
@@ -72,7 +72,7 @@ describe("parser", function() {
 // Helpers
 ///////////
 
-function test () {
+function condition () {
   return true;
 }
 function parse () {
