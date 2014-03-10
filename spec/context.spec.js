@@ -61,7 +61,7 @@ describe("Context", function() {
       function parse () {};
       beforeEach(function() {
         expr = cxt.createParserExpr();
-        expr.when(cond).then(parse);
+        expr.when(cond).parseFile(parse);
       });
 
       it("should add a new parser", function() {
@@ -79,8 +79,8 @@ describe("Context", function() {
       it("should error without a condition", function() {
         expect(function() {
           expr = cxt.createParserExpr();
-          expr.then();
-        }).toThrow("Cannot add a parser without a condition");
+          expr.parseFile();
+        }).toThrow("Cannot create a parser rule without a condition");
       });
     });
 
@@ -90,7 +90,7 @@ describe("Context", function() {
         expr = cxt.createParserExpr();
         first = jasmine.createSpy("first");
         second = jasmine.createSpy("second");
-        expr.when(first).when(second).then(function() {});
+        expr.when(first).when(second).parseFile(function() {});
       });
 
       it("should still create a parser", function() {
