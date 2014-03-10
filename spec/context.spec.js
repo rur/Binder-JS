@@ -149,20 +149,44 @@ describe("Context", function() {
         });
       });
 
-      xdescribe("parsers", function() {
+      describe("parsers", function() {
+        var read;
         beforeEach(function() {
+          read = jasmine.createSpy("Read Test Parser");
           syx.parsers["readTest"] = {
             name: "readTest",
-            func: jasmine.createSpy("Read Test Parser")
+            func: read
           }
           expr = cxt.createParserExpr();
         });
 
         it("should add the readTest custom parser", function() {
-          expr.when(function() {}).readTest();
+          expr.when(function(){}).readTest();
+          expect(cxt.parsers.length).toEqual(1);
+        });
+
+        it("should call the read handler", function() {
+          expr.when(function(){}).readTest();
+          cxt.parsers[0].parse("path", cxt);
+          expect(read).wasCalledWith("path", cxt, []);
+        });
+
+        it("should pass on arguments", function() {
+          expr.when(function(){}).readTest("hello");
+          cxt.parsers[0].parse("path", cxt);
+          expect(read).wasCalledWith("path", cxt, ["hello"]);
+        });
+
+        it("should return what the parser returns", function() {
+          read.andReturn("was read");
+          expr.when(function(){}).readTest();
+          expect(cxt.parsers[0].parse("path", cxt)).toEqual("was read");
+        });
+
+        xit("should allow the user define an after parser", function() {
+
         });
       });
-
     });
   });
 });
