@@ -116,7 +116,38 @@ describe("Context", function() {
     });
 
     describe("defined syntax", function() {
+      beforeEach(function() {
+        syx.conditions["test"] = {
+          name: "test",
+          func: jasmine.createSpy("Test Condition")
+        };
+        syx.parsers["readTest"] = {
+          name: "readTest",
+          func: jasmine.createSpy("Read Test Parser")
+        }
+        expr = cxt.createParserExpr();
+      });
 
+      describe("conditions", function() {
+        it("should add the test custom condition", function() {
+          expr.test().parseFile();
+          cxt.parsers[0].condition("path", cxt);
+          expect(syx.conditions["test"].func).wasCalledWith("path", cxt);
+        });
+
+        it("should chain user boolean function", function() {
+          var spy = jasmine.createSpy("User Test Func");
+          spy.andReturn(true);
+          syx.conditions["test"].func.andReturn(true);
+          expr.test(spy).parseFile();
+          expect(cxt.parsers[0].condition("path", cxt)).toBeTruthy();
+          expect(spy).wasCalledWith("path", cxt);
+        });
+      });
+
+      xit("should add the readTest custom parser", function() {
+        expr.test().readTest();
+      });
     });
   });
 });
