@@ -76,14 +76,35 @@ describe("Definition", function() {
   });
 
   describe("buildSyntax", function() {
-    var depDef;
+    var depDef, syn;
     beforeEach(function() {
       depDef = new Definition("dep def");
+      depDef.condition("depTest", function() {});
+      depDef.parser("depTestReader", function() {});
       def = new Definition("test", [depDef]);
+      def.condition("test", function() {});
+      def.parser("testReader", function() {});
+      syn = def.buildSyntax();
     });
 
     it("should create syntax file", function() {
-      expect(def.buildSyntax()).toEqual(jasmine.any(Syntax));
+      expect(syn).toEqual(jasmine.any(Syntax));
+    });
+
+    it("should provide it with the conditions", function() {
+      expect(syn.conditions["test"].name).toEqual("test");
+    });
+
+    it("should extend dep' definition conditions", function() {
+      expect(syn.conditions["depTest"].name).toEqual("depTest");
+    });
+
+    it("should provide it with parsers", function() {
+      expect(syn.parsers["testReader"].name).toEqual("testReader");
+    });
+
+    it("should provide it with parsers", function() {
+      expect(syn.parsers["depTestReader"].name).toEqual("depTestReader");
     });
   });
 });
