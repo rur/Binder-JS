@@ -45,13 +45,13 @@ describe("Definition", function() {
     });
 
     it("should add a base parser field to parser VO", function() {
-      expect(pDef.parser).toBe(spy);
+      expect(pDef.func).toBe(spy);
     });
 
     it("should capture two parameter only call", function() {
       var spy2 = jasmine.createSpy("Second Pre Parser");
       def.parser("test_2", spy2);
-      expect(def.parsers.test_2.parser).toBe(spy2);
+      expect(def.parsers.test_2.func).toBe(spy2);
     });
   });
 
@@ -63,7 +63,7 @@ describe("Definition", function() {
     });
 
     it("should add a condition", function() {
-      expect(def.conditions.tester.test).toBe(spy);
+      expect(def.conditions.tester.func).toBe(spy);
     });
   });
 
