@@ -116,38 +116,53 @@ describe("Context", function() {
     });
 
     describe("defined syntax", function() {
-      beforeEach(function() {
-        syx.conditions["test"] = {
-          name: "test",
-          func: jasmine.createSpy("Test Condition")
-        };
-        syx.parsers["readTest"] = {
-          name: "readTest",
-          func: jasmine.createSpy("Read Test Parser")
-        }
-        expr = cxt.createParserExpr();
-      });
-
       describe("conditions", function() {
+        var test;
+        beforeEach(function() {
+          test = jasmine.createSpy("Test Condition");
+          test.andReturn(true);
+          syx.conditions["test"] = {
+            name: "test",
+            func: test
+          };
+          expr = cxt.createParserExpr();
+        });
+
         it("should add the test custom condition", function() {
           expr.test().parseFile();
           cxt.parsers[0].condition("path", cxt);
-          expect(syx.conditions["test"].func).wasCalledWith("path", cxt);
+          expect(test).wasCalledWith("path", cxt, []);
         });
 
         it("should chain user boolean function", function() {
           var spy = jasmine.createSpy("User Test Func");
           spy.andReturn(true);
-          syx.conditions["test"].func.andReturn(true);
           expr.test(spy).parseFile();
           expect(cxt.parsers[0].condition("path", cxt)).toBeTruthy();
           expect(spy).wasCalledWith("path", cxt);
         });
+
+        it("should pass arguments to the condition function", function() {
+          expr.test("hello").parseFile();
+          expect(cxt.parsers[0].condition("path", cxt)).toBeTruthy();
+          expect(test).wasCalledWith("path", cxt, ["hello"]);
+        });
       });
 
-      xit("should add the readTest custom parser", function() {
-        expr.test().readTest();
+      xdescribe("parsers", function() {
+        beforeEach(function() {
+          syx.parsers["readTest"] = {
+            name: "readTest",
+            func: jasmine.createSpy("Read Test Parser")
+          }
+          expr = cxt.createParserExpr();
+        });
+
+        it("should add the readTest custom parser", function() {
+          expr.when(function() {}).readTest();
+        });
       });
+
     });
   });
 });
