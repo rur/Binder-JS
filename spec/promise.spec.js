@@ -1,122 +1,156 @@
 var p = require("../lib/promise");
 
 
-describe("promise", function() {
+describe("promise", function () {
   var ctrl, promise;
-  beforeEach(function() {
+  beforeEach(function () {
     ctrl = new p.PromiseCtrl("Test promise");
     promise = ctrl.promise;
   });
 
-  it("should create the controller", function() {
+  it("should create the controller", function () {
     expect(ctrl).toBeDefined();
   });
 
-  it("should create the promise", function() {
+  it("should create the promise", function () {
     expect(promise).toBeDefined();
   });
 
-  it("should give the promise a name", function() {
+  it("should give the promise a name", function () {
     expect(promise.name).toEqual("Test promise");
   });
 
-  describe("calling then handlers", function() {
+  describe("calling then handlers", function () {
     var res, rej;
-    beforeEach(function() {
+    beforeEach(function () {
       res = jasmine.createSpy("Promise resolve handler");
       rej = jasmine.createSpy("Promise reject handler");
     });
 
-    describe("that were registered beforehand", function() {
-      beforeEach(function() {
+    describe("that were registered beforehand", function () {
+      beforeEach(function () {
         promise.then(res, rej);
       });
-      it("should call resolve handler", function() {
+      it("should call resolve handler", function () {
         ctrl.resolve("test");
         expect(res).wasCalledWith("test");
       });
 
-      it("should call reject handler", function() {
+      it("should call reject handler", function () {
         ctrl.reject("test");
         expect(rej).wasCalledWith("test");
       });
     });
 
-    describe("handlers registered late", function() {
-      it("should call resolve handler", function() {
+    describe("handlers registered late", function () {
+      it("should call resolve handler", function () {
         ctrl.resolve("test");
         promise.then(res, rej);
         expect(res).wasCalledWith("test");
       });
 
-      it("should call resolve handler", function() {
+      it("should call resolve handler", function () {
         ctrl.reject("test");
         promise.then(res, rej);
         expect(rej).wasCalledWith("test");
       });
     });
 
-    describe("null handlers", function() {
-      beforeEach(function() {
+    describe("null handlers", function () {
+      beforeEach(function () {
         promise.then();
       });
 
-      it("should ignore null resolve handler", function() {
+      it("should ignore null resolve handler", function () {
         expect(function () {
           ctrl.resolve();
         }).not.toThrow("TypeError: undefined is not a function");
       });
 
-      it("should ignore null resolve handler", function() {
+      it("should ignore null resolve handler", function () {
         expect(function () {
           ctrl.reject();
         }).not.toThrow("TypeError: undefined is not a function");
       });
     });
-  });
 
-  describe("promise#chain", function() {
-    var ctrl, ctrl2, p1Data, finalProm;
-    beforeEach(function() {
-      ctrl2 = p1Data = null;
-      ctrl = new p.PromiseCtrl("Test Promise");
-      finalProm = ctrl.promise.chain(function (data) {
-        p1Data = data;
-        ctrl2 = new p.PromiseCtrl("Sub Test Promise");
-        return ctrl2.promise;
+    describe("chained handler", function () {
+      it("should create a chained promise", function (done) {
+        ctrl.resolve("test");
+        promise.then(function (data) {
+          return data+" some value";
+        }).then(function (data) {
+          expect(data).toEqual("test some value");
+          done();
+        });
       });
     });
+  });
 
-    it("should chain two promises together", function(done) {
+  describe("promise chaining", function () {
+    var ctrl;
+    beforeEach(function () {
+      ctrl = new p.PromiseCtrl("Test Promise");
+    });
+
+    it("should chain two promises together", function (done) {
       ctrl.resolve("test");
-      ctrl2.resolve(p1Data+" plus sub");
-      finalProm.then(function (data) {
+      ctrl.promise.then(function (data) {
+        this.resolve(data+" plus sub");
+        return this.promise;
+      }).then(function (data) {
         expect(data).toEqual("test plus sub");
         done();
       });
     });
 
-    it("should reject from origin", function(done) {
+    it("should reject from origin", function (done) {
       ctrl.reject("test");
-      finalProm.then(null, function (data) {
+      ctrl.promise.then().then(null, function (data) {
         expect(data).toEqual("test");
         done();
       });
     });
 
-    it("should reject from second", function(done) {
+    it("should reject from second", function (done) {
       ctrl.resolve("test");
-      ctrl2.reject(p1Data + " was rejected the second time");
-      finalProm.then(null, function (data) {
+      ctrl.promise.then(function (data) {
+        this.reject(data + " was rejected the second time");
+        return this.promise;
+      }).then(null, function (data) {
         expect(data).toEqual("test was rejected the second time");
         done();
       })
     });
+
+    it("should delay resolution on many steps", function(done) {
+      var handler = function (data) {
+        setTimeout(this.handle(function() {
+          this.resolve(data + ".");
+        }));
+        return this.promise;
+      }
+      ctrl.promise.then(handler).then(handler).then(handler).then(handler).then(function (data) {
+        expect(data).toEqual("resolved.....");
+        done();
+      });
+      ctrl.resolve("resolved.");
+    });
+
+    it("should propagate a reject through many steps", function (done) {
+      var spy = jasmine.createSpy("Chain spy");
+      ctrl.promise.then(null, spy).then(null, spy).then(null, spy).then(null, spy).then(null, function (reason) {
+        expect(reason).toEqual("for a good reason");
+        expect(spy.callCount).toEqual(4);
+        done();
+      });
+      ctrl.reject("for a good reason");
+    });
   });
 
 
-  describe("ctrl#handle", function() {
-    it("should return a handle", function(done) {
+  describe("ctrl#handle", function () {
+    it("should return a handle", function (done) {
       var handle = ctrl.handle(function (arg) {
         this.resolve("deferred " + arg);
       });
@@ -127,13 +161,15 @@ describe("promise", function() {
       handle(123);
     });
 
-    it("should return the return value of the deferred function", function() {
-      expect(ctrl.handle(function () {
+    it("should return a promise of the deferred function", function () {
+      ctrl.handle(function () {
         return "test";
-      })()).toEqual("test");
+      })().then(function  (data) {
+        expect(data).toEqual("test");
+      });
     });
 
-    it("should catch an error and reject promise with it", function(done) {
+    it("should catch an error and reject promise with it", function (done) {
       var handle = ctrl.handle(function () {
         throw "later error";
       });
@@ -145,14 +181,14 @@ describe("promise", function() {
     });
   });
 
-  describe("callAsync", function() {
+  describe("callAsync", function () {
     var spy;
-    beforeEach(function() {
+    beforeEach(function () {
       spy = jasmine.createSpy();
       spy.andReturn("test");
     });
 
-    it("should call a function returning a promise", function(done) {
+    it("should call a function returning a promise", function (done) {
       p.callAsync(spy)
         .then(function (data) {
           expect(data).toEqual("test");
@@ -160,12 +196,12 @@ describe("promise", function() {
         });
     });
 
-    it("should pass args", function() {
+    it("should pass args", function () {
       p.callAsync(spy, 1, 2, 3);
       expect(spy).wasCalledWith(1,2,3);
     });
 
-    it("should allow the function to respond with a promise", function(done) {
+    it("should allow the function to respond with a promise", function (done) {
       spy.andCallFake(function () {
         this.resolve("test");
         return this.promise;
@@ -177,7 +213,7 @@ describe("promise", function() {
         });
     });
 
-    it("should allow the function reject the promise and return nothing", function(done) {
+    it("should allow the function reject the promise and return nothing", function (done) {
       spy.andCallFake(function () {
         this.reject("it was rejected");
       });
@@ -188,7 +224,7 @@ describe("promise", function() {
         })
     });
 
-    it("should catch an error and reject the promise", function(done) {
+    it("should catch an error and reject the promise", function (done) {
       spy.andCallFake(function () {
         throw "some error";
       });
@@ -197,10 +233,6 @@ describe("promise", function() {
         expect(data).toEqual("some error");
         done();
       });
-    });
-
-    it("should catch an error in a ", function() {
-
     });
   });
 });

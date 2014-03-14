@@ -121,12 +121,12 @@ describe("scanner#scanFile", function() {
 
     it("should trigger an error", function() {
       var rejSpy = jasmine.createSpy("Error handler");
-      filter.andCallFake(function () {
+      cxt.filters[0] = function () {
         this.reject("test error");
-      });
+      };
       scanner.scanFile(fp, cxt).then(null, rejSpy);
-      expect(rejSpy).wasCalledWith("test error");
       expect(parse).not.toHaveBeenCalled();
+      expect(rejSpy).wasCalledWith("test error");
     });
 
     it("should cause file to be ignored", function() {
