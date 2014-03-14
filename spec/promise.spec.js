@@ -74,6 +74,29 @@ describe("promise", function () {
       });
     });
 
+    describe("error handlers", function () {
+      var spy;
+      beforeEach(function() {
+        spy = jasmine.createSpy();
+      });
+
+      it("should reject promise", function() {
+        promise.then(function (data) {
+          throw "something";
+        }).then(null, spy);
+        ctrl.resolve();
+        expect(spy).wasCalledWith("something");
+      });
+
+      it("should not get interrupted propagating reject", function() {
+        promise.then(null, function () {
+          throw "something";
+        }).then(null, spy);
+        ctrl.reject("reason");
+        expect(spy).wasCalledWith("reason");
+      });
+    });
+
     describe("chained handler", function () {
       it("should create a chained promise", function (done) {
         ctrl.resolve("test");
