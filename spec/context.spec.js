@@ -1,5 +1,6 @@
 var Context = require("../lib/context");
 var Syntax = require("../lib/syntax");
+var p = require("../lib/promise");
 
 describe("Context", function() {
   var cxt;
@@ -153,6 +154,7 @@ describe("Context", function() {
         var read;
         beforeEach(function() {
           read = jasmine.createSpy("Read Test Parser");
+          read.andReturn("was read");
           syx.parsers["readTest"] = {
             name: "readTest",
             func: read
@@ -161,32 +163,62 @@ describe("Context", function() {
         });
 
         it("should add the readTest custom parser", function() {
-          expr.when(function(){}).readTest();
+          expr.when(noop).readTest();
           expect(cxt.parsers.length).toEqual(1);
         });
 
         it("should call the read handler", function() {
-          expr.when(function(){}).readTest();
-          cxt.parsers[0].parse("path", cxt);
-          expect(read).wasCalledWith("path", cxt, []);
+          expr.when(noop).readTest();
+          p.callAsync(cxt.parsers[0].parse, "path", cxt);
         });
 
         it("should pass on arguments", function() {
-          expr.when(function(){}).readTest("hello");
-          cxt.parsers[0].parse("path", cxt);
+          expr.when(noop).readTest("hello");
+          p.callAsync(cxt.parsers[0].parse, "path", cxt);
           expect(read).wasCalledWith("path", cxt, ["hello"]);
         });
 
-        it("should return what the parser returns", function() {
-          read.andReturn("was read");
-          expr.when(function(){}).readTest();
-          expect(cxt.parsers[0].parse("path", cxt)).toEqual("was read");
+        it("should return what the parser returns", function(done) {
+          expr.when(noop).readTest();
+          p.callAsync(cxt.parsers[0].parse, "path", cxt).then(function(data) {
+            expect(data).toEqual("was read");
+            done();
+          });
         });
 
-        xit("should allow the user define an after parser", function() {
+        it("should allow the user define an after parser", function(done) {
+          expr.when(noop).readTest(function(data) {
+            return data + " and added too";
+          });
+          p.callAsync(cxt.parsers[0].parse, "path", cxt).then(function (data) {
+            expect(data).toEqual("was read and added too");
+            done();
+          });
+        });
 
+        it("should chain promises", function(done) {
+          read.andCallFake(function () {
+            this.resolve("promise read data");
+            return this.promise;
+          });
+
+          expr.when(noop).readTest(function (data) {
+            setTimeout(this.handle(function() {
+              this.resolve(data + " and added too!")
+            }), 10);
+            return this.promise;
+          });
+
+          p.callAsync(cxt.parsers[0].parse, "path", cxt).then(function (data) {
+            expect(data).toEqual("promise read data and added too!");
+            done();
+          });
         });
       });
     });
   });
 });
+
+function noop () {
+  "pass";
+}
