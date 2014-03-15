@@ -1,5 +1,6 @@
 var Definition = require("./lib/definition");
 var Binder = require("./lib/binder");
+var Context = require("./lib/context");
 var Rule = require("./lib/rule");
 
 var definitions = {};
@@ -38,7 +39,13 @@ var binder_js_api = {
    *                              rules for attaching data handlers
    */
   create: function (defName) {
-    return new Binder();
+    if (!definitions.hasOwnProperty(defName)) {
+      throw new Error("Cannot create binder, no definition was found with the name: '" + defName + "'");
+    }
+    var def = definitions[defName];
+    var cxt = new Context();
+    cxt._syntax = def.buildSyntax();
+    return new Binder(cxt);
   },
   /**
    * Create rule object to defined new parse rules for this context and

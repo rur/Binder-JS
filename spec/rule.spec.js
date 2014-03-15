@@ -6,7 +6,7 @@ var Rule = require("../lib/rule");
 //      Syntax implementations are worked out
 /////////////////////////////////////////////////////////
 
-describe("rule", function() {
+xdescribe("rule", function() {
   var rule, cxt, parsers, filters;
   beforeEach(function() {
     parsers = [];
@@ -59,11 +59,23 @@ describe("rule", function() {
     });
   });
 
-  xdescribe("#definePredicate", function() {
+  describe("#definePreParser", function() {
+    var spy, parse;
+    beforeEach(function() {
+      rule.definePreParser("read_test", function () {
+        return "abc";
+      });
+      spy = jasmine.createSpy("Parser").andReturn("123");
+      rule.parse(function () { return true; }).read_test(spy);
+      parse = parsers[0];
+    });
 
+    it("should add a pre parser method", function() {
+      expect(parse()).toEqual("123");
+    });
   });
 
-  xdescribe("#defineProcess", function() {
+  xdescribe("#definePredicate", function() {
 
   });
 });

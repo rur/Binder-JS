@@ -196,7 +196,7 @@ describe("Context", function() {
           });
         });
 
-        it("should chain promises", function(done) {
+        it("should chain parse handlers", function(done) {
           read.andCallFake(function () {
             this.resolve("promise read data");
             return this.promise;
