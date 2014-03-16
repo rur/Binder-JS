@@ -138,6 +138,19 @@ describe("scanner#scanFile", function() {
       expect(resSpy).toHaveBeenCalledWith(undefined);
       expect(parse).not.toHaveBeenCalled();
     });
+
+    it("should call filters in the order they were defined", function(done) {
+      var spy = jasmine.createSpy("Second Filter");
+      filter.andCallFake(function (p, c) {
+        c.test = "value";
+      });
+      spy.andCallFake(function(p, c) {
+        done();
+        expect(c.test).toEqual("value");
+      });
+      cxt.filters.push(spy);
+      scanner.scanFile(fp, cxt);
+    });
   });
 
   describe("errors", function() {
