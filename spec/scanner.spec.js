@@ -151,6 +151,23 @@ describe("scanner#scanFile", function() {
       cxt.filters.push(spy);
       scanner.scanFile(fp, cxt);
     });
+
+    it("should handle filters asynchronously", function(done) {
+      var spy = jasmine.createSpy("Second Filter");
+      filter.andCallFake(function (p, c) {
+        setTimeout(this.handle(function() {
+          c.test = "value";
+          this.resolve();
+        }), 10);
+        return this.promise;
+      });
+      spy.andCallFake(function(p, c) {
+        done();
+        expect(c.test).toEqual("value");
+      });
+      cxt.filters.push(spy);
+      scanner.scanFile(fp, cxt);
+    });
   });
 
   describe("errors", function() {
