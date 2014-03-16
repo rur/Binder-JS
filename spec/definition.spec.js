@@ -67,11 +67,29 @@ describe("Definition", function() {
     });
   });
 
-  describe("init", function() {
+  describe("initializing binder", function() {
+    var initl, binder;
+    beforeEach(function() {
+      binder = {mock: "binder"};
+      initl = jasmine.createSpy("init");
+      def.init(initl);
+    });
+
     it("should add an init function", function() {
-      var spy = jasmine.createSpy("init");
-      def.init(spy);
-      expect(def.inits[0]).toBe(spy);
+      expect(def.inits[0]).toBe(initl);
+    });
+
+    it("should run each initl function on supplied binder", function() {
+      def.initialize(binder);
+      expect(initl).wasCalledWith(binder);
+    });
+
+    it("should run dependent init functions first", function() {
+      var sub = new Definition("sub", [def]);
+      var initl2 = jasmine.createSpy("sub binder initl");
+      sub.init(initl2);
+      sub.initialize(binder);
+      expect(initl).wasCalledWith(binder);
     });
   });
 
