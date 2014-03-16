@@ -119,7 +119,7 @@ describe("scanner#scanFile", function() {
       expect(filter).wasCalledWith(fp, cxt);
     });
 
-    it("should trigger an error", function() {
+    it("should reject the scanner promise", function() {
       var rejSpy = jasmine.createSpy("Error handler");
       cxt.filters[0] = function () {
         this.reject("test error");
@@ -127,6 +127,16 @@ describe("scanner#scanFile", function() {
       scanner.scanFile(fp, cxt).then(null, rejSpy);
       expect(parse).not.toHaveBeenCalled();
       expect(rejSpy).wasCalledWith("test error");
+    });
+
+    it("should handle an error", function() {
+      var rejSpy = jasmine.createSpy("Error handler");
+      cxt.filters[0] = function () {
+        throw "some error";
+      };
+      scanner.scanFile(fp, cxt).then(null, rejSpy);
+      expect(parse).not.toHaveBeenCalled();
+      expect(rejSpy).wasCalledWith("some error");
     });
 
     it("should cause file to be ignored", function() {
