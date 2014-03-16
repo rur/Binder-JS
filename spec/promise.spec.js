@@ -20,7 +20,7 @@ describe("promise", function () {
     expect(promise.name).toEqual("Test promise");
   });
 
-  describe("calling then handlers", function () {
+  describe("calling then handlers:", function () {
     var res, rej;
     beforeEach(function () {
       res = jasmine.createSpy("Promise resolve handler");
@@ -88,12 +88,13 @@ describe("promise", function () {
         expect(spy).wasCalledWith("something");
       });
 
-      it("should not get interrupted propagating reject", function() {
+      it("should allow an error to be thrown in the reject handler", function() {
         promise.then(null, function () {
           throw "something";
-        }).then(null, spy);
-        ctrl.reject("reason");
-        expect(spy).wasCalledWith("reason");
+        });
+        expect(function () {
+          ctrl.reject("reason");
+        }).toThrow("something");
       });
     });
 
