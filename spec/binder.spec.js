@@ -1,200 +1,57 @@
 var Binder = require("../lib/binder");
-var Context = require("../lib/context");
-var Parser = require("../lib/parser");
-var s = require("../lib/scanner");
-var path = require("path");
-var fs = require("fs");
+var scanner = require("../lib/scanner");
 
-/*
-  Binder mid-level integration specs
- */
-describe("binder", function() {
-  var binder, cxt;
+describe("Binder", function() {
+  var binder;
   beforeEach(function() {
-    cxt = new Context();
-    binder = new Binder(cxt);
-    configForTests(binder);
+    binder = new Binder({mock: "context", filters: [], parsers: []});
   });
 
-  describe("compiling a single file", function() {
-    it("should parse an individual file", function (done) {
-      binder.compile(path.resolve(__dirname, "fixtures/test.txt"))
-      .then(function (data) {
-        expect(data).toEqual("this is a test file");
-        done();
-      }, getFailSpy(this, done));
+  it("should create a binder", function() {
+    expect(binder).toBeDefined();
+  });
 
+  it("should add the context object to itself", function() {
+    expect(binder.context.mock).toEqual("context");
+  });
+
+  describe("extending Rule", function() {
+    it("should register filters", function() {
+      function mock () {};
+      binder.filter(mock);
+      expect(binder.context.filters).toContain(mock);
     });
 
-    it("should parse another individual file", function (done) {
-      binder.compile(path.resolve(__dirname, "fixtures/test_2.txt"))
-      .then(function (data) {
-        expect(data).toEqual("this is another test file");
-        done();
-      }, getFailSpy(this, done));
-    });
-
-    describe("fault handling", function() {
-      it("should error with a faulty path", function(done) {
-        binder.compile("non/existent/file.txt").then(null,
-          function (data) {
-            expect(data.toString()).toEqual("Error: ENOENT, stat 'non/existent/file.txt'");
-            done();
-          });
-      });
-
-      it("should timeout an unresolved promise", function(done) {
-        binder.compileTimeout = 10; // just to make the test run faster
-        binder.parse(function () {
-          return true;
-        }, function () {
-          // Faulty parser. ie. it doesn't ever complete the promise
-          return this.promise;
-        });
-        binder.compile(path.resolve(__dirname, "fixtures/test_2.txt"))
-          .then(null, function (data) {
-            expect(data).toEqual("File scan timed out after 10 msec");
-            done();
-          });
-      });
-
-      it("should catch and reject an error in a parser", function(done) {
-        binder.parse(function () { return true; },
-            function () {
-              setTimeout(this.handle(function () {
-                throw "some error";
-              }), 10);
-              return this.promise;
-            });
-        binder.compile(path.resolve(__dirname, "fixtures/test.txt"))
-        .then(null, function (err) {
-          expect(err.toString()).toEqual("some error");
-          done();
-        });
-      });
-
-      it("should catch and reject an error in a filter", function(done) {
-        binder.filter(function () {
-          throw "some filter error";
-        });
-        binder.compile(path.resolve(__dirname, "fixtures/test.txt"))
-        .then(null, function (err) {
-          expect(err).toEqual("some filter error");
-          done();
-        })
-      });
+    it("should create parser expressions", function() {
+      var exp = {
+        someCondition: jasmine.createSpy("someCondition"),
+        someParse: jasmine.createSpy("someParse")
+      };
+      exp.someCondition.andReturn(exp);
+      exp.someParse.andReturn(exp);
+      binder.context.createParserExpr = function () {
+        return exp;
+      }
+      binder.parse.someCondition("abc").someParse("def");
+      expect(exp.someCondition).wasCalledWith("abc");
+      expect(exp.someParse).wasCalledWith("def");
     });
   });
 
-  describe("compiling a directory", function() {
-    it("should parse a file in a directory", function(done) {
-      var spec = this;
-      binder.compile(path.resolve(__dirname, "fixtures/simpleDir/"))
-      .then(function (data) {
-        expect(data).toEqual({
-          "test.txt": "this is a test file in a folder"
-        });
-        done();
-      }, function (data) {
-        spec.fail(data);
-        done();
-      });
+  describe("#compile", function() {
+    var dup;
+    beforeEach(function() {
+      dup = {mock: "dupCxt"};
+      binder.context.dup = function () {
+        return dup;
+      }
+      binder.compileTimeout = 123;
+      spyOn(scanner, "scanFile");
     });
 
-    xit("should parse data in sub directories", function(done) {
-      var spec = this;
-      binder.compile(path.resolve(__dirname, "fixtures/nestedData/"))
-      .then(function (data) {
-        expect(data.subDir).toEqual({
-          "test.txt": "this is another text file inside a sub directory"
-        });
-        done();
-      }, getFailSpy(this, done, "reject"));
+    it("should call scanFile", function() {
+      binder.compile("some/path");
+      expect(scanner.scanFile).wasCalledWith("some/path", dup, 123);
     });
-
   });
 });
-
-///////////////////
-//// Spec Helpers
-//
-// Add filters and parsers for tests
-function configForTests (binder) {
-  // create file property in context
-  binder.filter(function (pth, cxt) {
-    fs.stat(pth, this.handle(function (err, stats) {
-      if (err) {
-        this.reject(err);
-      } else {
-        cxt.file = {
-          isDir: stats.isDirectory(),
-          ext: path.extname(pth),
-        };
-        this.resolve();
-      }
-    }));
-    return this.promise;
-  });
-  // Null Parser
-  binder.parse(function () {
-      return true;
-    }, function () {
-      this.reject(); // skip
-    });
-  // UTF Parser
-  binder.parse(function (_, cxt) {
-      var fileTypes = [".txt", ".js"];
-      return fileTypes.indexOf(cxt.file.ext) > -1;
-    }, function (pth) {
-      fs.readFile(pth, "utf-8", this.handle(function (err, data) {
-        if (err) {
-          this.reject(err);
-          return;
-        }
-        this.resolve(data);
-      }));
-      return this.promise;
-    });
-  // Folder Parser
-  binder.parse(function (_, cxt) {
-      return cxt.file.isDir;
-    }, function (pth, cxt) {
-      var parser = this;
-      fs.readdir(pth, function (err, files) {
-        var count, fileData = {};
-        var subCxt, file;
-        // handlers
-        function makeFileResolver(file, f_cxt) {
-          return parser.handle(function (data) {
-            fileData[file] = data;
-            if (--count === 0) {
-              parser.resolve(fileData);
-            }
-          });
-        }
-        function makeFileRejector(file, f_cxt) {
-          return parser.handle(function (err) {
-            count--;
-            if (err !== void 0) {
-              parser.reject(err);
-            }
-          });
-        }
-        //
-        if (err) {
-          parser.reject(err);
-        } else {
-          count = files.length;
-          for (var i=0, len=count; i < len; i++) {
-            subCxt = cxt.dup();
-            file = files[i];
-            s.scanFile(path.join(pth, file), subCxt).then(
-              makeFileResolver(file, subCxt),
-              makeFileRejector(file, subCxt)
-            );
-          }
-        }
-      });
-      return this.promise;
-    });
-}
