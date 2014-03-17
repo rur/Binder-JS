@@ -29,6 +29,9 @@ describe("create", function() {
       })
       .condition("truthy", function () {
         return true;
+      })
+      .init(function(binder) {
+        binder.parse.truthy().readTest();
       });
     binder = index.create("test");
   });
@@ -45,10 +48,23 @@ describe("create", function() {
     expect(binder.parse.readTest).toEqual(jasmine.any(Function));
   });
 
-  it("should error if the definition wasn't found", function() {
+  it("should error if a specified definition wasn't found", function() {
     expect(function () {
       index.create("unknown");
     }).toThrow("Cannot create binder, no definition was found with the name: 'unknown'");
+  });
+
+  it("should create a default only binder", function() {
+    binder = index.create();
+    expect(binder.parse.readUTF).toEqual(jasmine.any(Function));
+  });
+
+  it("should apply definition init", function() {
+    expect(binder.context.parsers.length).toBeGreaterThan(0);
+  });
+
+  it("should have default definition applied", function() {
+    expect(binder.parse.readUTF).toEqual(jasmine.any(Function));
   });
 });
 

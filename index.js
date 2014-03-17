@@ -5,6 +5,10 @@ var Rule = require("./lib/rule");
 
 var definitions = {};
 
+// default
+var defaultDef = require("./lib/default")(new Definition());
+
+// build API
 var binder_js_api = {
   /**
    * Create a new binder syntax definition
@@ -15,7 +19,7 @@ var binder_js_api = {
    *                               now define syntax rules
    */
   define: function (name, depNames) {
-    var deps = [], dep, dName;
+    var deps = [defaultDef], dep, dName;
     if (depNames instanceof Array) {
       for (var i = 0; i < depNames.length; i++) {
         dName = depNames[i];
@@ -39,13 +43,18 @@ var binder_js_api = {
    *                              rules for attaching data handlers
    */
   create: function (defName) {
-    if (!definitions.hasOwnProperty(defName)) {
-      throw new Error("Cannot create binder, no definition was found with the name: '" + defName + "'");
-    }
-    var def = definitions[defName];
+    var def = defaultDef;
     var cxt = new Context();
+    if (defName) {
+      if (!definitions.hasOwnProperty(defName)) {
+        throw new Error("Cannot create binder, no definition was found with the name: '" + defName + "'");
+      }
+      def = definitions[defName];
+    }
     cxt._syntax = def.buildSyntax();
-    return new Binder(cxt);
+    var binder = new Binder(cxt);
+    def.initialize(binder);
+    return binder;
   },
   /**
    * Create rule object to defined new parse rules for this context and
@@ -59,5 +68,5 @@ var binder_js_api = {
   }
 };
 
-
+// Export API
 module.exports = binder_js_api;
