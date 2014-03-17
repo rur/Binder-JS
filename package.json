@@ -1,11 +1,22 @@
 {
-  "name": "Binder_JS",
-  "version": "0.0.0",
-  "description": "Library to write file system parsers",
+  "name": "binder-js",
+  "version": "0.0.1",
+  "description": "Library for compiling file system data into memory",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine-node ."
   },
-  "author": "Ruaidhri Devery",
-  "license": "BSD-2-Clause"
+  "devDependencies": {
+    "jasmine-node": "1.13.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:rur/Binder-JS.git"
+  },
+  "author": "Ruaidhri Devery <info@fluid.ie> (http://www.fluid.ie/)",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/rur/Binder-JS/issues"
+  },
+  "homepage": "https://github.com/rur/Binder-JS"
 }
