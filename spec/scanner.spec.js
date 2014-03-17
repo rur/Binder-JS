@@ -36,6 +36,7 @@ describe("scanner#scanFile", function() {
             })
           ]
         }).then(handler);
+
       expect(handler).wasCalledWith("some data");
     });
 

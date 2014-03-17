@@ -76,5 +76,15 @@ describe("parsing", function() {
         expect(reason).toEqual("this is a test file");
       }, getFailSpy(this, done, "reject"));
     });
+
+    it("should allow a new rule be defined with an after handler", function(done) {
+      binder.parse.fileExt(".skip").readUTF(function (data) {
+        return data + "; until this custom parser was added!";
+      });
+      binder.compile(path.resolve(__dirname, "fixtures/nestedData/someFile.skip")).then(function (data) {
+        done();
+        expect(data).toEqual("unknown file; until this custom parser was added!");
+      }, getFailSpy(this, done, "reject"));
+    });
   });
 });

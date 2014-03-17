@@ -85,6 +85,7 @@ describe("Context", function() {
       });
     });
 
+
     describe("multiple conditions", function() {
       var first, second;
       beforeEach(function() {
@@ -170,6 +171,7 @@ describe("Context", function() {
         it("should call the read handler", function() {
           expr.when(noop).readTest();
           p.callAsync(cxt.parsers[0].parse, "path", cxt);
+          expect(read).wasCalledWith("path", cxt, []);
         });
 
         it("should pass on arguments", function() {
@@ -183,10 +185,10 @@ describe("Context", function() {
           p.callAsync(cxt.parsers[0].parse, "path", cxt).then(function(data) {
             expect(data).toEqual("was read");
             done();
-          });
+          }, getFailSpy(this, done, "reject"));
         });
 
-        it("should allow the user define an after parser", function(done) {
+        it("should allow the user define an 'after' parser", function(done) {
           expr.when(noop).readTest(function(data) {
             return data + " and added too";
           });
@@ -199,6 +201,27 @@ describe("Context", function() {
         it("should chain parse handlers", function(done) {
           read.andCallFake(function () {
             this.resolve("promise read data");
+            return this.promise;
+          });
+
+          expr.when(noop).readTest(function (data) {
+            setTimeout(this.handle(function() {
+              this.resolve(data + " and added too!")
+            }), 10);
+            return this.promise;
+          });
+
+          p.callAsync(cxt.parsers[0].parse, "path", cxt).then(function (data) {
+            expect(data).toEqual("promise read data and added too!");
+            done();
+          });
+        });
+
+        it("should chain async parse handlers", function(done) {
+          read.andCallFake(function () {
+            setTimeout(this.handle(function() {
+              this.resolve("promise read data");
+            }), 10);
             return this.promise;
           });
 

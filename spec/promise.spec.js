@@ -188,7 +188,8 @@ describe("promise", function () {
     it("should return a promise of the deferred function", function () {
       ctrl.handle(function () {
         return "test";
-      })().then(function  (data) {
+      })()
+      ctrl.promise.then(function  (data) {
         expect(data).toEqual("test");
       });
     });
@@ -203,6 +204,7 @@ describe("promise", function () {
       });
       handle();
     });
+
   });
 
   describe("callAsync", function () {
