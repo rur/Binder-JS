@@ -16,7 +16,7 @@ describe("binder", function() {
     configForTests(binder);
   });
 
-  xdescribe("compiling a single file", function() {
+  describe("compiling a single file", function() {
     it("should parse an individual file", function (done) {
       binder.compile(path.resolve(__dirname, "fixtures/test.txt"))
       .then(function (data) {
@@ -86,7 +86,7 @@ describe("binder", function() {
     });
   });
 
-  xdescribe("compiling a directory", function() {
+  describe("compiling a directory", function() {
     it("should parse a file in a directory", function(done) {
       var spec = this;
       binder.compile(path.resolve(__dirname, "fixtures/simpleDir/"))
@@ -101,7 +101,7 @@ describe("binder", function() {
       });
     });
 
-    it("should parse data in ", function(done) {
+    xit("should parse data in sub directories", function(done) {
       var spec = this;
       binder.compile(path.resolve(__dirname, "fixtures/nestedData/"))
       .then(function (data) {
@@ -109,10 +109,7 @@ describe("binder", function() {
           "test.txt": "this is another text file inside a sub directory"
         });
         done();
-      }, function (data) {
-        spec.fail(data);
-        done();
-      });
+      }, getFailSpy(this, done, "reject"));
     });
 
   });
@@ -163,7 +160,7 @@ function configForTests (binder) {
       return cxt.file.isDir;
     }, function (pth, cxt) {
       var parser = this;
-      fs.readdir(pth, this.handle(function (err, files) {
+      fs.readdir(pth, function (err, files) {
         var count, fileData = {};
         var subCxt, file;
         // handlers
@@ -171,7 +168,7 @@ function configForTests (binder) {
           return parser.handle(function (data) {
             fileData[file] = data;
             if (--count === 0) {
-              this.resolve(fileData);
+              parser.resolve(fileData);
             }
           });
         }
@@ -179,13 +176,13 @@ function configForTests (binder) {
           return parser.handle(function (err) {
             count--;
             if (err !== void 0) {
-              this.reject(err);
+              parser.reject(err);
             }
           });
         }
         //
         if (err) {
-          this.reject(err);
+          parser.reject(err);
         } else {
           count = files.length;
           for (var i=0, len=count; i < len; i++) {
@@ -197,7 +194,7 @@ function configForTests (binder) {
             );
           }
         }
-      }));
+      });
       return this.promise;
     });
 }

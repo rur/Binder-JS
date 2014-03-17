@@ -87,4 +87,36 @@ describe("parsing", function() {
       }, getFailSpy(this, done, "reject"));
     });
   });
+
+  describe("folder parser", function() {
+    it("should parse a folders data", function(done) {
+      binder.compile(path.resolve(__dirname, "fixtures/simpleDir/")).then( function (data) {
+        done();
+        expect(data).toEqual({
+          "test.txt": "this is a test file in a folder"
+        });
+      }, getFailSpy(this, done, "reject"));
+    });
+
+    describe("nested data", function() {
+      var compiled;
+      beforeEach(function() {
+        compiled = binder.compile(path.resolve(__dirname, "fixtures/nestedData/"));
+      });
+
+      it("should parse a nested dir", function(done) {
+        compiled.then(function (data) {
+                done();
+                expect(data.subDir).toEqual({"test.txt": "this is another text file inside a sub directory"});
+              }, getFailSpy(this, done, "reject"));
+      });
+
+      it("should skip unknown file type", function(done) {
+        compiled.then(function (data) {
+                done();
+                expect(data["someFile.skip"]).toBeUndefined();
+              }, getFailSpy(this, done, "reject"));
+      });
+    });
+  });
 });
