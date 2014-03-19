@@ -40,6 +40,8 @@ describe("parsing", function() {
       spy.andCallFake(function (pth, cxt) {
         done();
         expect(cxt.file.ext).toEqual(".skip");
+        expect(cxt.file.name).toEqual("someFile.skip");
+        expect(cxt.file.path).toContain("/fixtures/nestedData/someFile.skip");
       });
       binder.filter(spy);
       binder.compile(path.resolve(__dirname, "fixtures/nestedData/someFile.skip"));
