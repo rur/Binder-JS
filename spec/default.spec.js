@@ -154,6 +154,16 @@ describe("parsing", function () {
       }, getFailSpy(this, done, "reject"));
     });
 
+    it("should handle empty folders", function (done) {
+      // since it is not possible to commit an empty folder into git
+      // this spec will fail with an 'ENOENT' error if you have just cloned the repo
+      // to make it pass, just create an 'emptyDir' folder in 'spec/fixtures/'
+      binder.compile(path.resolve(__dirname, "fixtures/emptyDir/")).then( function (data) {
+        done();
+        expect(data).toEqual({});
+      }, getFailSpy(this, done, "reject"));
+    });
+
     describe("nested data", function () {
       var compiled;
       beforeEach(function () {
