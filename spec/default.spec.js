@@ -4,19 +4,41 @@ var Definition = require("../lib/definition");
 var Context = require("../lib/context");
 var Binder = require("../lib/binder");
 
-describe("addDefaultDefinition", function () {
+describe("default", function () {
   var def;
   beforeEach(function () {
     def = new Definition("default");
     d_fault(def);
   });
 
-  it("should add an ignore parse handler", function () {
-    expect(def.parsers.ignore.name).toEqual("ignore");
-  });
+  describe("conditions", function() {
+    it("should add an ignore parse handler", function () {
+      expect(def.parsers.ignore.name).toEqual("ignore");
+    });
 
-  it("should have an always condition", function () {
-    expect(def.conditions.always.name).toEqual("always");
+    it("should have an always condition", function () {
+      expect(def.conditions.always.name).toEqual("always");
+    });
+
+    describe("route", function() {
+      var binder;
+      beforeEach(function() {
+        var cxt = new Context();
+        cxt._syntax = def.buildSyntax();
+        binder = new Binder(cxt);
+        def.initialize(binder);
+      });
+
+      it("should select by route", function (done) {
+        binder.parse.route("otherSubDir/sibling").fileExt(".txt").readUTF(function (data) {
+          return data + " with more!";
+        });
+        binder.compile(path.resolve(__dirname, "fixtures/nestedData/")).then(function (data) {
+          done();
+          expect(data.otherSubDir.sibling["test.txt"]).toEqual("data file with more!");
+        }, getFailSpy(this, done, "reject"));
+      });
+    });
   });
 });
 
