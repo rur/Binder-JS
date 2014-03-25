@@ -1,4 +1,5 @@
 var path = require("path");
+var fs = require("fs");
 var d_fault = require("../lib/default");
 var Definition = require("../lib/definition");
 var Context = require("../lib/context");
@@ -155,10 +156,25 @@ describe("parsing", function () {
     });
 
     it("should handle empty folders", function (done) {
-      // since it is not possible to commit an empty folder into git
-      // this spec will fail with an 'ENOENT' error if you have just cloned the repo
-      // to make it pass, just create an 'emptyDir' folder in 'spec/fixtures/'
+      var spec = this;
+      fs.mkdirSync(path.resolve(__dirname, "fixtures/emptyDir/"));
+
+      function cleanUp () {
+        done();
+        fs.rmdirSync(path.resolve(__dirname, "fixtures/emptyDir/"));
+      }
+
       binder.compile(path.resolve(__dirname, "fixtures/emptyDir/")).then( function (data) {
+        cleanUp();
+        expect(data).toEqual({});
+      }, function (reason) {
+        cleanUp();
+        spec.fail("failed to compile empty directory, reason: " + reason);
+      });
+    });
+
+    it("should handle a null directory", function (done) {
+      binder.compile(path.resolve(__dirname, "fixtures/nullDir/")).then( function (data) {
         done();
         expect(data).toEqual({});
       }, getFailSpy(this, done, "reject"));
