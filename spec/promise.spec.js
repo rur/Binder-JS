@@ -31,12 +31,21 @@ describe("promise", function () {
       beforeEach(function () {
         promise.then(res, rej);
       });
+
       it("should call resolve handler", function () {
         ctrl.resolve("test");
         expect(res).wasCalledWith("test");
       });
 
       it("should call reject handler", function () {
+        ctrl.reject("test");
+        expect(rej).wasCalledWith("test");
+      });
+    });
+
+    describe("promise#catch", function () {
+      it("should call reject registered by catch", function () {
+        promise.catch(rej);
         ctrl.reject("test");
         expect(rej).wasCalledWith("test");
       });
@@ -96,6 +105,14 @@ describe("promise", function () {
           ctrl.reject("reason");
         }).toThrow("something");
       });
+
+      it("should allow an error to be thrown in the resolve handler", function() {
+        promise.then(function () {
+          throw "something";
+        }).then(null, spy);
+        ctrl.resolve("reason");
+        expect(spy).wasCalledWith("something");
+      });
     });
 
     describe("chained handler", function () {
@@ -110,6 +127,8 @@ describe("promise", function () {
       });
     });
   });
+
+
 
   describe("promise chaining", function () {
     var ctrl;
