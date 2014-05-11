@@ -271,11 +271,10 @@ describe("promise", function () {
 
     it("should catch an error and reject the promise", function (done) {
       spy.andCallFake(function () {
-        throw "some error";
+        throw new Error("some error");
       });
-      p.callAsync(spy)
-      .then(null, function (data) {
-        expect(data).toEqual("some error");
+      p.callAsync(spy).catch(function (reason) {
+        expect(reason.toString()).toEqual("Error: some error");
         done();
       });
     });

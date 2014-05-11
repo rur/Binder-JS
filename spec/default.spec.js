@@ -102,15 +102,18 @@ describe("parsing", function () {
       });
     });
 
-    it("should handle errors in defined filters", function (done) {
+    it("should handle errors in filter function", function (done) {
       var err = new Error("test error");
       binder.filter(function () {
         throw err;
       });
-      binder.compile(path.resolve(__dirname, "fixtures/nestedData/someFile.skip")).then(null, function (reason) {
-        done();
-        expect(reason).toBe(err);
-      });
+      binder.compile(path.resolve(__dirname, "fixtures/nestedData/someFile.skip"))
+        .then(
+          getFailSpy(this, done, 'resolve'),
+          function (reason) {
+            done();
+            expect(reason).toBe(err);
+          });
     });
   });
 
