@@ -2,6 +2,8 @@ var scanner = require("../lib/scanner");
 var Parser = require("../lib/parser");
 var path = require("path");
 var fs = require("fs");
+var when = require('when');
+var whennode = require('when/node');
 
 
 describe("scanner#scanFile", function() {
@@ -11,16 +13,17 @@ describe("scanner#scanFile", function() {
   });
 
   describe("parsing", function() {
-    it("should take a context and return the parsed data", function(done) {
+    it("should take a context and return the parsed data", function (done) {
       scanner.scanFile(fp, {filters: [], parsers: []})
-        .then(null, function (error) {
-          expect(error).toBe("No parser found");
-          done();
-        });
+        .then(
+          getFailSpy(this, done, 'resolve'),
+          function (error) {
+            expect(error).toBe("No parser found");
+            done();
+          });
     });
 
-    it("should get the data from the parser function", function() {
-      var handler = jasmine.createSpy("Scan file handler");
+    it("should get the data from the parser function", function (done) {
       scanner.scanFile(fp, {
           filters: [],
           parsers: [
@@ -35,12 +38,16 @@ describe("scanner#scanFile", function() {
               return "some data";
             })
           ]
-        }).then(handler);
-
-      expect(handler).wasCalledWith("some data");
+        }).then(function (data) {
+          expect(data).toEqual("some data");
+          done();
+        }, function (reason) {
+          expect(reason).toEqual("the is not reason for this to happen!");
+          done();
+        });
     });
 
-    it("should get data from a file", function(done) {
+    it("should get data from a file", function (done) {
       scanner.scanFile(fp, {
         filters: [],
         parsers: [
@@ -48,24 +55,16 @@ describe("scanner#scanFile", function() {
             return true;
           },
           function (file_path) {
-            var parser = this;
-            fs.readFile(file_path, "utf-8", function (err, data) {
-              if (err) {
-                parser.reject(err);
-                return;
-              };
-              parser.resolve(data);
-            });
-            return this.promise;
+            return whennode.call(fs.readFile, file_path, "utf-8");
           })
         ]
       }).then(function (data) {
         expect(data).toEqual("this is a test file");
         done();
-      });
+      }, getFailSpy(this, done, "reject"));
     });
 
-    it("should pass a file read error onto the reject handler", function(done) {
+    it("should pass a file read error onto the reject handler", function (done) {
       scanner.scanFile(fp, {
         filters: [],
         parsers: [
@@ -73,15 +72,7 @@ describe("scanner#scanFile", function() {
             return true;
           },
           function (file_path) {
-            var parser = this;
-            fs.readFile("non-existent-file.txt", function (err, data) {
-              if (err) {
-                parser.reject(err);
-                return;
-              };
-              parser.resolve(data);
-            });
-            return this.promise;
+            return whennode.call(fs.readFile, "non-existent-file.txt", "utf-8");
           })
         ]
       }).then(null, function (data) {
@@ -90,17 +81,20 @@ describe("scanner#scanFile", function() {
       });
     });
 
-    it("should test last in parsers first", function() {
+    it("should test last in parsers first", function (done) {
+      var spy = jasmine.createSpy("false test");
       var cx = {
         filters: [],
         parsers: [
-          new Parser(jasmine.createSpy("true test"), jasmine.createSpy("target parser")),
-          new Parser(jasmine.createSpy("false test"))
+          new Parser(function () { return true }, function () { return "data" }),
+          new Parser(spy)
         ]
       };
-      cx.parsers[0].condition.andReturn(true);
-      scanner.scanFile(fp, cx);
-      expect(cx.parsers[1].condition).wasCalled();
+      scanner.scanFile(fp, cx).then(function (d) {
+        expect(d).toEqual("data");
+        expect(spy).wasCalled();
+        done();
+      });
     });
   });
 
@@ -115,42 +109,50 @@ describe("scanner#scanFile", function() {
       };
     });
 
-    it("should call a filter on a file", function() {
-      scanner.scanFile(fp, cxt);
-      expect(filter).wasCalledWith(fp, cxt);
+    it("should call a filter on a file", function (done) {
+      scanner.scanFile(fp, cxt).then(function () {
+        expect(filter).wasCalledWith(fp, cxt);
+        done();
+      }, getFailSpy(this, done, "reject"));
     });
 
     it("should reject the scanner promise", function() {
       var rejSpy = jasmine.createSpy("Error handler");
       cxt.filters[0] = function () {
-        this.reject("test error");
+        return when.reject("test error");
       };
-      scanner.scanFile(fp, cxt).then(null, rejSpy);
-      expect(parse).not.toHaveBeenCalled();
-      expect(rejSpy).wasCalledWith("test error");
+      scanner.scanFile(fp, cxt).then(null, function (reason) {
+        expect(reason.toString()).toEqual("test error");
+        expect(parse).not.toHaveBeenCalled();
+        done();
+      });
     });
 
-    it("should handle an error", function() {
+    it("should handle an error", function (done) {
       var rejSpy = jasmine.createSpy("Error handler");
       cxt.filters[0] = function () {
         throw "some error";
       };
-      scanner.scanFile(fp, cxt).then(null, rejSpy);
-      expect(parse).not.toHaveBeenCalled();
-      expect(rejSpy).wasCalledWith("some error");
+      scanner.scanFile(fp, cxt).then(null, function (reason) {
+        expect(reason.toString()).toEqual("some error");
+        expect(parse).not.toHaveBeenCalled();
+        done();
+      });
     });
 
-    it("should cause file to be ignored", function() {
+    it("should cause file to be ignored", function (done) {
       var resSpy = jasmine.createSpy("Resolve Spy");
       filter.andCallFake(function () {
-        this.reject();
+        return when.reject();
       });
-      scanner.scanFile(fp, cxt).then(null, resSpy);
-      expect(resSpy).toHaveBeenCalledWith(undefined);
-      expect(parse).not.toHaveBeenCalled();
+      scanner.scanFile(fp, cxt).then(null, function (reason) {
+        expect(reason).not.toBeDefined();
+        expect(parse).not.toHaveBeenCalled();
+        done();
+      });
     });
 
-    it("should call filters in the order they were defined", function(done) {
+    it("should call filters in the order they were defined", function (done) {
       var spy = jasmine.createSpy("Second Filter");
       filter.andCallFake(function (p, c) {
         c.test = "value";
@@ -163,18 +165,16 @@ describe("scanner#scanFile", function() {
       scanner.scanFile(fp, cxt);
     });
 
-    it("should handle filters asynchronously", function(done) {
+    it("should handle filters asynchronously", function (done) {
       var spy = jasmine.createSpy("Second Filter");
       filter.andCallFake(function (p, c) {
-        setTimeout(this.handle(function() {
+        return when().delay(10).then(function () {
           c.test = "value";
-          this.resolve();
-        }), 10);
-        return this.promise;
+        });
       });
       spy.andCallFake(function(p, c) {
-        done();
         expect(c.test).toEqual("value");
+        done();
       });
       cxt.filters.push(spy);
       scanner.scanFile(fp, cxt);
@@ -182,13 +182,13 @@ describe("scanner#scanFile", function() {
   });
 
   describe("errors", function() {
-    it("should timeout", function(done) {
+    it("should timeout", function (done) {
       scanner.scanFile(fp, {filters: [], parsers: [
         new Parser(function () { return true; }, function () {
-          return this.promise;
+          return when.defer().promise;
         })
       ]}, 10).then(null, function (err) {
-        expect(err).toEqual("File scan timed out after 10 msec");
+        expect(err.toString()).toEqual("Error: timed out after 10ms");
         done();
       });
     });
