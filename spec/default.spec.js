@@ -5,7 +5,7 @@ var Definition = require("../lib/definition");
 var Context = require("../lib/context");
 var Binder = require("../lib/binder");
 
-describe("default", function () {
+xdescribe("default", function () {
   var def;
   beforeEach(function () {
     def = new Definition("default");
@@ -43,7 +43,7 @@ describe("default", function () {
   });
 });
 
-describe("parsing", function () {
+xdescribe("parsing", function () {
   var binder, res, rej, cxt;
   beforeEach(function () {
     cxt = new Context();
