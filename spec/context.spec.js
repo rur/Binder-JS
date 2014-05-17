@@ -202,6 +202,14 @@ describe("Context", function () {
           });
         });
 
+        it("should pass the context to the 'after' parser", function (done) {
+          expr.when(noop).readTest(function (data, cxt) {
+            expect(cxt).toBeDefined();
+            done();
+          });
+          cxt.parsers[0].parse("path", cxt);
+        });
+
         it("should chain parse handlers", function (done) {
           read.andCallFake(function () {
             return "promise read data";
