@@ -1,1 +1,1 @@
-jasmine-node --autotest .
+node node_modules/.bin/jasmine-node . --autotest --color
