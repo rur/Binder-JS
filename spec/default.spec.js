@@ -35,9 +35,10 @@ describe("default", function () {
           return data + " with more!";
         });
         binder.compile(path.resolve(__dirname, "fixtures/nestedData/")).then(function (data) {
-          done();
           expect(data.otherSubDir.sibling["test.txt"]).toEqual("data file with more!");
-        }, getFailSpy(this, done, "reject"));
+          done();
+        },
+        getFailSpy(this, done, "reject"));
       });
     });
   });
@@ -62,10 +63,10 @@ describe("parsing", function () {
       it("should get the file info", function (done) {
         var spy = jasmine.createSpy("Filter Spy");
         spy.andCallFake(function (pth, cxt) {
-          done();
           expect(cxt.file.ext).toEqual(".skip");
           expect(cxt.file.name).toEqual("someFile.skip");
           expect(cxt.file.path).toContain("/fixtures/nestedData/someFile.skip");
+          done();
         });
         binder.filter(spy);
         binder.compile(path.resolve(__dirname, "fixtures/nestedData/someFile.skip"));
@@ -112,7 +113,7 @@ describe("parsing", function () {
           getFailSpy(this, done, 'resolve'),
           function (reason) {
             done();
-            expect(reason).toBe(err);
+            expect(reason.toString()).toEqual("Error: test error");
           });
     });
   });
@@ -162,7 +163,7 @@ describe("parsing", function () {
       var spec = this;
       fs.mkdirSync(path.resolve(__dirname, "fixtures/emptyDir/"));
 
-      function cleanUp () {
+      function cleanUp() {
         done();
         fs.rmdirSync(path.resolve(__dirname, "fixtures/emptyDir/"));
       }

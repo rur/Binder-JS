@@ -36,11 +36,25 @@ describe("rule", function() {
     });
   });
 
-  describe("#filter", function() {
-    it("should add a filter", function() {
-      function filter () {}
+  describe("adding filters", function() {
+    function filter () {}
+    beforeEach(function () {
       rule.filter(filter);
-      expect(cxt.filters[0]).toBe(filter);
+    });
+
+    it("should add a filter", function() {
+      expect(cxt.filters[0].name).toBe("filter");
+    });
+
+    it("should add a 'prepare' filter", function () {
+      function preFilter() {
+        // body...
+      }
+      rule.prepare(preFilter);
+      expect(cxt.filters.length).toEqual(2);
+      expect(cxt.filters[0].name).toBe("preFilter");
     });
   });
+
+
 });
