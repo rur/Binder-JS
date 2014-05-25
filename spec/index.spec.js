@@ -73,3 +73,31 @@ describe("rule", function() {
     expect(index.rule({})).toEqual(jasmine.any(Rule));
   });
 });
+
+describe("scanFile", function () {
+  var cxt, parser, filter;
+  beforeEach(function () {
+    parser = jasmine.createSpyObj("Parser", ["condition", "parse"]);
+    parser.condition.andReturn(true);
+    parser.parse.andReturn("some data");
+    filter = jasmine.createSpy("Filter");
+    cxt = {
+      parsers: [parser],
+      filters: [filter]
+    };
+  });
+
+  it("should resolve with the raw data", function (done) {
+    index.scanFile("some/path.test", cxt).then(function (data) {
+      expect(data).toEqual("some data");
+      done();
+    }).catch(getFailSpy(this, done, "reject"));
+  });
+
+  it("should call the filter with the path and context", function (done) {
+    index.scanFile("some/path.test", cxt).then(function (data) {
+      expect(filter).wasCalledWith("some/path.test", cxt);
+      done();
+    }).catch(getFailSpy(this, done, "reject"));
+  });
+});

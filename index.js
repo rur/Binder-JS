@@ -2,6 +2,7 @@ var Definition = require("./lib/definition");
 var Binder = require("./lib/binder");
 var Context = require("./lib/context");
 var Rule = require("./lib/rule");
+var scanner = require("./lib/scanner");
 
 var definitions = {};
 
@@ -65,7 +66,18 @@ var binder_js_api = {
    */
   rule: function (cxt) {
     return new Rule(cxt);
-  }
+  },
+  /**
+   * Scan a specified path and return data promise, this is used
+   * in parse handlers to direct the recursion towards a file
+   *
+   * @param  {string}   path       The path to scan
+   * @param  {Context}  context    A binder Context object
+   * @param  {number}   timeout_ms The number of milliseconds to wait before
+   *                               the scan cancels, defaults to 7000
+   * @return {promise}             A Promises/A+ compliant promise
+   */
+  scanFile: scanner.scanFile
 };
 
 // Export API

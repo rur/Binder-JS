@@ -1,1 +1,1 @@
-node node_modules/.bin/jasmine-node . --autotest --color
+node node_modules/.bin/jasmine-node . --autotest --color --captureExceptions
