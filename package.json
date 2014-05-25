@@ -1,13 +1,14 @@
 {
   "name": "binder-js",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Library for compiling file system data into memory",
   "main": "index.js",
   "scripts": {
     "test": "jasmine-node ."
   },
   "devDependencies": {
-    "jasmine-node": "1.13.x"
+    "jasmine-node": "1.13.x",
+    "when": "3.1.x"
   },
   "repository": {
     "type": "git",
