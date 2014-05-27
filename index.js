@@ -7,7 +7,7 @@ var scanner = require("./lib/scanner");
 var definitions = {};
 
 // default
-var defaultDef = require("./lib/default")(new Definition());
+var defaultDef = require("./lib/binders/default")(new Definition());
 
 // build API
 var binder_js_api = {
@@ -77,8 +77,17 @@ var binder_js_api = {
    *                               the scan cancels, defaults to 7000
    * @return {promise}             A Promises/A+ compliant promise
    */
-  scanFile: scanner.scanFile
+  scan: scanner.scan
 };
+
+//
+// library init:
+//
+// define 'fs-reader' binder
+require('./lib/binders/fs-reader')(
+  binder_js_api.define("fs-reader")
+);
+
 
 // Export API
 module.exports = binder_js_api;

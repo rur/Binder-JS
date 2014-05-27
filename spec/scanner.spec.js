@@ -6,7 +6,7 @@ var when = require('when');
 var whennode = require('when/node');
 
 
-describe("scanner#scanFile", function() {
+describe("scanner#scan", function() {
   var fp;
   beforeEach(function() {
     fp = path.resolve(__dirname, "fixtures/test.txt");
@@ -14,7 +14,7 @@ describe("scanner#scanFile", function() {
 
   describe("parsing", function() {
     it("should take a context and return the parsed data", function (done) {
-      scanner.scanFile(fp, {filters: [], parsers: []})
+      scanner.scan(fp, {filters: [], parsers: []})
         .then(
           getFailSpy(this, done, 'resolve'),
           function (error) {
@@ -24,7 +24,7 @@ describe("scanner#scanFile", function() {
     });
 
     it("should get the data from the parser function", function (done) {
-      scanner.scanFile(fp, {
+      scanner.scan(fp, {
           filters: [],
           parsers: [
           new Parser(function test () {
@@ -48,7 +48,7 @@ describe("scanner#scanFile", function() {
     });
 
     it("should get data from a file", function (done) {
-      scanner.scanFile(fp, {
+      scanner.scan(fp, {
         filters: [],
         parsers: [
           new Parser(function () {
@@ -65,7 +65,7 @@ describe("scanner#scanFile", function() {
     });
 
     it("should pass a file read error onto the reject handler", function (done) {
-      scanner.scanFile(fp, {
+      scanner.scan(fp, {
         filters: [],
         parsers: [
           new Parser(function () {
@@ -90,7 +90,7 @@ describe("scanner#scanFile", function() {
           new Parser(spy)
         ]
       };
-      scanner.scanFile(fp, cx).then(function (d) {
+      scanner.scan(fp, cx).then(function (d) {
         expect(d).toEqual("data");
         expect(spy).wasCalled();
         done();
@@ -110,7 +110,7 @@ describe("scanner#scanFile", function() {
     });
 
     it("should call a filter on a file", function (done) {
-      scanner.scanFile(fp, cxt).then(function () {
+      scanner.scan(fp, cxt).then(function () {
         expect(filter).wasCalledWith(fp, cxt);
         done();
       }, getFailSpy(this, done, "reject"));
@@ -121,7 +121,7 @@ describe("scanner#scanFile", function() {
       cxt.filters[0] = function () {
         return when.reject("test error");
       };
-      scanner.scanFile(fp, cxt).then(null, function (reason) {
+      scanner.scan(fp, cxt).then(null, function (reason) {
         expect(reason.toString()).toEqual("test error");
         expect(parse).not.toHaveBeenCalled();
         done();
@@ -133,7 +133,7 @@ describe("scanner#scanFile", function() {
       cxt.filters[0] = function () {
         throw "some error";
       };
-      scanner.scanFile(fp, cxt).then(null, function (reason) {
+      scanner.scan(fp, cxt).then(null, function (reason) {
         expect(reason.toString()).toEqual("some error");
         expect(parse).not.toHaveBeenCalled();
         done();
@@ -145,7 +145,7 @@ describe("scanner#scanFile", function() {
       filter.andCallFake(function () {
         return when.reject();
       });
-      scanner.scanFile(fp, cxt).then(null, function (reason) {
+      scanner.scan(fp, cxt).then(null, function (reason) {
         expect(reason).not.toBeDefined();
         expect(parse).not.toHaveBeenCalled();
         done();
@@ -162,7 +162,7 @@ describe("scanner#scanFile", function() {
         expect(c.test).toEqual("value");
       });
       cxt.filters.push(spy);
-      scanner.scanFile(fp, cxt);
+      scanner.scan(fp, cxt);
     });
 
     it("should handle filters asynchronously", function (done) {
@@ -177,13 +177,13 @@ describe("scanner#scanFile", function() {
         done();
       });
       cxt.filters.push(spy);
-      scanner.scanFile(fp, cxt);
+      scanner.scan(fp, cxt);
     });
   });
 
   describe("errors", function() {
     it("should timeout", function (done) {
-      scanner.scanFile(fp, {filters: [], parsers: [
+      scanner.scan(fp, {filters: [], parsers: [
         new Parser(function () { return true; }, function () {
           return when.defer().promise;
         })

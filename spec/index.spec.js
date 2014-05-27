@@ -74,7 +74,7 @@ describe("rule", function() {
   });
 });
 
-describe("scanFile", function () {
+describe("scan", function () {
   var cxt, parser, filter;
   beforeEach(function () {
     parser = jasmine.createSpyObj("Parser", ["condition", "parse"]);
@@ -88,14 +88,14 @@ describe("scanFile", function () {
   });
 
   it("should resolve with the raw data", function (done) {
-    index.scanFile("some/path.test", cxt).then(function (data) {
+    index.scan("some/path.test", cxt).then(function (data) {
       expect(data).toEqual("some data");
       done();
     }).catch(getFailSpy(this, done, "reject"));
   });
 
   it("should call the filter with the path and context", function (done) {
-    index.scanFile("some/path.test", cxt).then(function (data) {
+    index.scan("some/path.test", cxt).then(function (data) {
       expect(filter).wasCalledWith("some/path.test", cxt);
       done();
     }).catch(getFailSpy(this, done, "reject"));

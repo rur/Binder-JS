@@ -46,12 +46,12 @@ describe("Binder", function() {
         return dup;
       }
       binder.compileTimeout = 123;
-      spyOn(scanner, "scanFile");
+      spyOn(scanner, "scan");
     });
 
-    it("should call scanFile", function() {
+    it("should call scan", function() {
       binder.compile("some/path");
-      expect(scanner.scanFile).wasCalledWith("some/path", dup, 123);
+      expect(scanner.scan).wasCalledWith("some/path", dup, 123);
     });
   });
 });
