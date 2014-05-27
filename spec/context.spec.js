@@ -133,7 +133,7 @@ describe("Context", function () {
         it("should add the test custom condition", function () {
           expr.test().parseFile();
           cxt.parsers[0].condition("path", cxt);
-          expect(test).wasCalledWith("path", cxt, []);
+          expect(test).wasCalledWith("path", cxt);
         });
 
         it("should chain user boolean function", function () {
@@ -147,7 +147,7 @@ describe("Context", function () {
         it("should pass arguments to the condition function", function () {
           expr.test("hello").parseFile();
           expect(cxt.parsers[0].condition("path", cxt)).toBeTruthy();
-          expect(test).wasCalledWith("path", cxt, ["hello"]);
+          expect(test).wasCalledWith("path", cxt, "hello");
         });
       });
 
@@ -171,7 +171,7 @@ describe("Context", function () {
         it("should call the read handler", function (done) {
           expr.when(noop).readTest();
           cxt.parsers[0].parse("path", cxt).then(function (data) {
-            expect(read).wasCalledWith("path", cxt, []);
+            expect(read).wasCalledWith("path", cxt);
             done();
           });
         });
@@ -179,7 +179,7 @@ describe("Context", function () {
         it("should pass on arguments", function (done) {
           expr.when(noop).readTest("hello");
           cxt.parsers[0].parse("path", cxt).then(function (data) {
-            expect(read).wasCalledWith("path", cxt, ["hello"]);
+            expect(read).wasCalledWith("path", cxt, "hello");
             done();
           });
         });
