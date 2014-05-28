@@ -1,26 +1,9 @@
-var index = require("../index");
 var Definition = require("../lib/definition");
 var Binder = require("../lib/binder");
 var Rule = require("../lib/rule");
+var index = require("../index");
 
-describe("define", function() {
-  it("should create a new definition object", function() {
-    expect(index.define("something")).toEqual(jasmine.any(Definition));
-  });
-
-  it("should provide the definition with a ref to dep", function() {
-    var dep = index.define("depDef");
-    expect(index.define("test", ["depDef"]).deps).toContain(dep);
-  });
-
-  it("should throw an error if the base definition name doesn't exist", function() {
-    expect(function () {
-      index.define("test", ["typo"]);
-    }).toThrow("Binder definition 'typo' not found");
-  });
-});
-
-describe("create", function() {
+describe("index#create", function() {
   var binder;
   beforeEach(function() {
     index.define("test")
@@ -40,6 +23,10 @@ describe("create", function() {
     expect(binder).toEqual(jasmine.any(Binder));
   });
 
+  it("should create a basic binder", function () {
+    expect(index.create()).toEqual(jasmine.any(Binder));
+  });
+
   it("have added a parsers condition term", function() {
     expect(binder.parse.truthy).toEqual(jasmine.any(Function));
   });
@@ -54,21 +41,16 @@ describe("create", function() {
     }).toThrow("Cannot create binder, no definition was found with the name: 'unknown'");
   });
 
-  it("should create a default only binder", function() {
-    binder = index.create();
-    expect(binder.parse.readUTF).toEqual(jasmine.any(Function));
-  });
-
   it("should apply definition init", function() {
     expect(binder.context.parsers.length).toBeGreaterThan(0);
   });
 
   it("should have default definition applied", function() {
-    expect(binder.parse.readUTF).toEqual(jasmine.any(Function));
+    expect(binder.parse.ignore).toEqual(jasmine.any(Function));
   });
 });
 
-describe("rule", function() {
+describe("index#rule", function() {
   it("should create a new rule", function() {
     expect(index.rule({})).toEqual(jasmine.any(Rule));
   });
