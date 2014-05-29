@@ -134,6 +134,25 @@ describe("binders/fs-reader", function () {
               expect(reason.toString()).toEqual("Error: test error");
             });
       });
+
+      describe("compile file size limit", function () {
+        it("should have added a fsLimit object", function () {
+          expect(binder.context.fileScanLimit.soFar).toBe(0);
+        });
+
+        it("should have a high limit", function () {
+          expect(binder.context.fileScanLimit.max).toBeGreaterThan(10E5);
+        });
+
+        it("should allow the limit to be lowered", function (done) {
+          binder.context.fileScanLimit.max = 10;
+          binder.compile(path.resolve(fixturesDir, "nestedData/someFile.skip"))
+            .then(getFailSpy(this, done, "resolve"), function (reason) {
+              expect(reason.toString()).toEqual("Error: File Scan limit reached");
+              done();
+            })
+        });
+      });
     });
 
     describe("Null Parser", function (done) {

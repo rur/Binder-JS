@@ -16,6 +16,6 @@ describe("register", function() {
   it("should throw an error if the base definition name doesn't exist", function() {
     expect(function () {
       register("test", ["typo"]);
-    }).toThrow("Cannot create binder, no definition was found with the name: 'typo'");
+    }).toThrow("No binder definition was found with the name: 'typo'");
   });
 });

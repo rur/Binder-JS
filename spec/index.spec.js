@@ -38,7 +38,7 @@ describe("index#create", function() {
   it("should error if a specified definition wasn't found", function() {
     expect(function () {
       index.create("unknown");
-    }).toThrow("Cannot create binder, no definition was found with the name: 'unknown'");
+    }).toThrow("No binder definition was found with the name: 'unknown'");
   });
 
   it("should apply definition init", function() {
