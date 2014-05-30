@@ -43,7 +43,7 @@ BinderJS is an experimental rule based parsing tool for recursive scanning opera
 Basic Example
 -----------
 
-One use case could be to read data from the files system into memory. In the following example a folder is parsed which contains a single json file.
+One use case could be to read data from the file system into memory. In the following example a folder is parsed which contains a single json file.
 
 	var binder = require('binder-js');
 
@@ -101,7 +101,7 @@ Using the file parsing example again:
 	                 |
 	            'subFile.txt'
 
-Each node of the hierarchy represents exactly one matched rule with a parse handler invocation. The data returned from each node, is handled by its parent node, which in turn, chooses what to return. This is how data is channeled back to the caller.
+Each node of the hierarchy represents exactly one matched rule with a parse handler invocation. The data returned from each node is handled by its parent node, which in turn, chooses what to return. This is how data is channeled back to the caller.
 
 Recursion is triggered in these parse handlers. In this case, the folder parse function.
 
@@ -113,7 +113,7 @@ Here is how that might be implemented:
 		// collect folder data as an array of its parsed contents
 		var output = [];
 		fs.readdirSync(path).forEach(function (subPath) {
-			var subData = binder.scan(subPath, cxt); // lets pretend scan is sync
+			var subData = binder.scan(subPath, cxt); // lets pretend this makes sense
 			output.push(subData);
 		});
 		return output;
@@ -125,7 +125,7 @@ Context Filters
 
 As the process progresses, the context needs to be transformed at every stage. Responsibility for this lies with filter functions which get called before any rules get checked. Filters are registered on the parser and every filter get called in the order they were add at the beginning of _every_ scan. It has the opportunity to add data to the context object before the predicate functions get called. It can also return a promise if it's work is async.
 
-Here is an example of the filter that loads info about a file before any parser read it. This info is typically used by predicates to test if a particular parse handler is applicable.
+Here is an example of the filter that loads info about a file before any parser handles it. This info is typically used by predicates to test if a particular parse rule is applicable.
 
 	var reader = binder.create('my-fs-reader');
 
@@ -145,6 +145,6 @@ Here is an example of the filter that loads info about a file before any parser 
 
 ### And beyond
 
-Reading from the files system is just one application, it should be capable of managing any recursive scan process. For example it could be used to step through the data and write files back to the files system.
+Reading from the file system is just one application, it should be capable of managing any recursive scan process. For example it could be used to step through the data and write files back to the file system.
 
-However, at this time other applications have not yet been explored in detail. Therefore some changes to the api are likely as new requirements come along.
+However, at this time, other applications have not yet been explored in detail. Therefore some changes to the api are likely as new requirements present themselves.
