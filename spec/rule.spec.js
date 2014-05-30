@@ -5,10 +5,10 @@ describe("rule", function() {
   beforeEach(function() {
     expr = {
       when: jasmine.createSpy("test condition"),
-      parseFile: jasmine.createSpy("read parse handler")
+      parse: jasmine.createSpy("read parse handler")
     };
     expr.when.andReturn(expr);
-    expr.parseFile.andReturn(expr);
+    expr.parse.andReturn(expr);
     cxt = {
       filters: [],
       createParserExpr: function () {
@@ -26,13 +26,13 @@ describe("rule", function() {
     it("should complete the expression", function() {
       rule.parse(condit, parse);
       expect(expr.when).wasCalledWith(condit);
-      expect(expr.parseFile).wasCalledWith(parse);
+      expect(expr.parse).wasCalledWith(parse);
     });
 
     it("should complete the expression using statement syntax", function() {
-      rule.parse.when(condit).parseFile(parse);
+      rule.parse.when(condit).parse(parse);
       expect(expr.when).wasCalledWith(condit);
-      expect(expr.parseFile).wasCalledWith(parse);
+      expect(expr.parse).wasCalledWith(parse);
     });
   });
 

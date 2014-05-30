@@ -1,7 +1,7 @@
 {
   "name": "binder-js",
-  "version": "0.2.0",
-  "description": "Library for compiling file system data into memory",
+  "version": "0.3.0",
+  "description": "Library for rule based recursive parsing",
   "main": "index.js",
   "scripts": {
     "test": "jasmine-node ."

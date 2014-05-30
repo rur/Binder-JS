@@ -62,7 +62,7 @@ describe("Context", function () {
       function parse () {};
       beforeEach(function () {
         expr = cxt.createParserExpr();
-        expr.when(cond).parseFile(parse);
+        expr.when(cond).parse(parse);
       });
 
       it("should add a new parser", function () {
@@ -80,7 +80,7 @@ describe("Context", function () {
       it("should error without a condition", function () {
         expect(function () {
           expr = cxt.createParserExpr();
-          expr.parseFile();
+          expr.parse();
         }).toThrow("Cannot create a parser rule without a condition");
       });
     });
@@ -92,7 +92,7 @@ describe("Context", function () {
         expr = cxt.createParserExpr();
         first = jasmine.createSpy("first");
         second = jasmine.createSpy("second");
-        expr.when(first).when(second).parseFile(function () {});
+        expr.when(first).when(second).parse(function () {});
       });
 
       it("should still create a parser", function () {
@@ -131,7 +131,7 @@ describe("Context", function () {
         });
 
         it("should add the test custom condition", function () {
-          expr.test().parseFile();
+          expr.test().parse();
           cxt.parsers[0].condition("path", cxt);
           expect(test).wasCalledWith("path", cxt);
         });
@@ -139,13 +139,13 @@ describe("Context", function () {
         it("should chain user boolean function", function () {
           var spy = jasmine.createSpy("User Test Func");
           spy.andReturn(true);
-          expr.test(spy).parseFile();
+          expr.test(spy).parse();
           expect(cxt.parsers[0].condition("path", cxt)).toBeTruthy();
           expect(spy).wasCalledWith("path", cxt);
         });
 
         it("should pass arguments to the condition function", function () {
-          expr.test("hello").parseFile();
+          expr.test("hello").parse();
           expect(cxt.parsers[0].condition("path", cxt)).toBeTruthy();
           expect(test).wasCalledWith("path", cxt, "hello");
         });

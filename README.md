@@ -1,66 +1,150 @@
 Binder-JS
 =========
 
-Library for compiling file system data into memory. This library provides a syntax for defining a set of rules which control how the file system is traversed, how file data is read into memory and what transformations that data should go through. These rules govern how a single file or folder will be reduced to a data object for use in your application or script.
+BinderJS is an experimental rule based parsing tool for recursive scanning operations. It provides a convenient syntax for declaring rules which control recursion and collect data. The mechanism is designed with IO in mind utilizing an A+ compliant promise library to manage its asynchronous parsing process.
 
-#Basic Usage#
+**Install:**
 
-Binder comes with a small set of default rules for parsing txt files and traversing folders. It ignores any files it doesn't recognize (Null Parser).
+	npm install binder-js
 
-Using default only binder:
+**API overview:**
 
-	var binderJs = require("binder-js");
-	var binder = binderJs.create();
-	// n.b. binder#compile returns a promise
-	binder.compile("path/to/some/folder")
-		.then(function (result) {}, function (error) {});
+	var binder = require('binder-js');
 
-If all goes well it will generate a hash containing folder and utf data read from any .txt files encountered. Similar to the following:
+	/**
+	 * Register your own syntax definition
+	 */
+	var def = binder.define('my-binder-def');
+	def.parser('myParser', 'optionalPreParser', function (subject, context) { return 'the data' });
+	def.condition('isTrue', function (subject, context) {return !!context.true;});
+	def.init(function (parserInstance) {
+		// add default rules here
+	});
 
-	{
-		"test.txt": "files content",
-		"subDir": {
-			"subDirFile.txt": "sub dir file content"
-		}
-	}
+	/**
+	 * Create a parser from a syntax definition
+	 */
+	var parser = binder.create('my-binder-def');
+	parser.parse.when(function (s, c) {return true;}).parse(function (s, c) { return "some data" });
+	parser.filter(function (sbj, cxt) { cxt.subject = sbj; });
 
-Neat but not terribly useful. The library is setup to make it easy to declare your own parsing rules with minimal boilerplate.
+	/**
+	 * Trigger recursion step
+	 */
+	var promise = binder.scan(subject, parentContext);
+	promise.then(function (data) { data === "parsed data from subject" });
 
-#Create Rule#
+	/**
+	 * Used to add rules to a sub context (advanced)
+	 */
+	var rule = binder.rule(context);
+	rules.parse.when(function (s, c) {return true;}).parse(function (s, c) { return "some data" });
 
-Once you have created your binder you can add your own rules in a declarative style. For example, lets parse .json file data.
+Basic Example
+-----------
 
-	var binderJs = require("binder-js");
-	var binder = binderJs.create();
+One use case could be to read data from the files system into memory. In the following example a folder is parsed which contains a single json file.
 
-	binder.parse.fileExt(".json").readUTF(function (data) {
+	var binder = require('binder-js');
+
+	// instantiate a parser from the 'fs-reader' syntax definition
+	// This comes with a special syntax and some predefined rules
+	var reader = binder.create('fs-reader');
+
+	// define a rule
+	reader.parse.fileExt('.json').readUTF(function (data, cxt) {
 		return JSON.parse(data);
 	});
 
-	binder.compile("some/path");
-
-This is a basic example, more is possible. All parse handlers can delay resolving their value if the operation they perform needs to be asynchronous.
-
-For example,
-
-	binder.parse.fileExt(".json").readUTF(function (data) {
-		var response = this;
-		someAsyncMethod(data, function (err, finalData) {
-			if (err) {
-				response.reject(err);
-				return;
-			}
-			response.resove(finalData);
+	// trigger the process
+	reader.compile('/some/folder/with/a/json/file/')
+		.then(function (data) {
+			data.should.eql({
+				'example.json': '"the file contents"'
+			});
 		});
-		return this.promise;
+
+
+Syntax Definitions
+-----------
+
+Parsers are created from syntax definitions which define predicate functions and parse handlers. 'fs-reader' in the previous example implements 'fileExt' and 'readUTF' used in the parse rule expression. BinderJS also provides you with an api for defining your own syntax.
+
+The following example is a pseudo version of readUTF parser and fileExt predicate
+
+	var def = binder.define('my-fs-reader');
+
+	def.condition('fileExt', function (pth, cxt) {
+		return ext === cxt.file.ext;
+	})
+
+	def.parser("readUTF", function (pth, cxt) {
+	  return fs.readFileSync(pth, "utf-8");
 	});
 
-#Define Syntax#
+In our first example we invoked readUTF with an additional handler which served as a hook for JSON.parse. Internally that function is queued to handle the value returned/resolved from the defined parser. Hence you can see how data can be piped and remapped.
 
-In the examples above, ```fileExt``` and ```readUTF``` might stand out to you as being mysterious. The implementation of these are part of a definition, in this case the 'default' definition which is always present.
+We could improve our example version of readUTF by returning a promise instead of calling *fs.readFileSync* which blocks on IO.
 
-You can define your own custom syntax in terms of 'conditions' and 'parse handlers' with a name and function associated with each.
 
-A parser rule is made up of a combination of one or more conditions and exactly one parse handler. Although a parse handler can be chained to another.
+Data Flow
+-----------
 
-*More detail soon...*
+If you think of the recursive parsing process in terms of a tree structure, context flows from the root down through the nodes and data flows back.
+
+Using the file parsing example again:
+
+
+	        [root/]
+	         /  \
+	'file.txt'  [subFolder/]
+	                 |
+	            'subFile.txt'
+
+Each node of the hierarchy represents exactly one matched rule with a parse handler invocation. The data returned from each node, is handled by its parent node, which in turn, chooses what to return. This is how data is channeled back to the caller.
+
+Recursion is triggered in these parse handlers. In this case, the folder parse function.
+
+Here is how that might be implemented:
+
+	var def = binder.define('my-fs-reader');
+
+	def.parser("parseFolder", function (path, cxt) {
+		// collect folder data as an array of its parsed contents
+		var output = [];
+		fs.readdirSync(path).forEach(function (subPath) {
+			var subData = binder.scan(subPath, cxt); // lets pretend scan is sync
+			output.push(subData);
+		});
+		return output;
+	});
+
+
+Context Filters
+-----------
+
+As the process progresses, the context needs to be transformed at every stage. Responsibility for this lies with filter functions which get called before any rules get checked. Filters are registered on the parser and every filter get called in the order they were add at the beginning of _every_ scan. It has the opportunity to add data to the context object before the predicate functions get called. It can also return a promise if it's work is async.
+
+Here is an example of the filter that loads info about a file before any parser read it. This info is typically used by predicates to test if a particular parse handler is applicable.
+
+	var reader = binder.create('my-fs-reader');
+
+	reader.filter(function (pth, cxt) {
+		var stats = fs.statSync(pth);
+		// add file info to the context object
+		cxt.file = {
+			isDir: stats.isDirectory(),
+			ext: path.extname(pth),
+			name: path.basename(pth),
+			path: path.resolve(pth),
+			size: stats.size
+		}
+	});
+
+---
+
+### And beyond
+
+Reading from the files system is just one application, it should be capable of managing any recursive scan process. For example it could be used to step through the data and write files back to the files system.
+
+However, at this time other applications have not yet been explored in detail. Therefore some changes to the api are likely as new requirements come along.
