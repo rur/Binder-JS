@@ -41,17 +41,13 @@ describe("Binder", function() {
   describe("#compile", function() {
     var dup;
     beforeEach(function() {
-      dup = {mock: "dupCxt"};
-      binder.context.dup = function () {
-        return dup;
-      }
       binder.compileTimeout = 123;
       spyOn(scanner, "scan");
     });
 
     it("should call scan", function() {
       binder.compile("some/path");
-      expect(scanner.scan).wasCalledWith(dup, "some/path", 123);
+      expect(scanner.scan).wasCalledWith(binder.context, "some/path", 123);
     });
   });
 });
