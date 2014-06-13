@@ -42,8 +42,8 @@ describe("Definition", function() {
       expect(pDef.name).toEqual("test");
     });
 
-    xit("should add a base parser field to parser VO", function() {
-      expect(pDef.base[0]).toEqual(jasmine.any(Function));
+    it("should add a base parser field to parser VO", function() {
+      expect(pDef.base).toEqual("base");
     });
 
     it("should add a base parser field to parser VO", function() {
@@ -54,6 +54,14 @@ describe("Definition", function() {
       var spy2 = jasmine.createSpy("Second Pre Parser");
       def.parser("test_2", spy2);
       expect(def.parsers.test_2.func).toBe(spy2);
+    });
+
+    it("should compute a pipeline property", function () {
+      expect(def.parsers.test.pipeline.length).toEqual(2);
+    });
+
+    it("should not mutate base parser pipline", function () {
+      expect(def.parsers.base.pipeline.length).toEqual(1);
     });
   });
 
