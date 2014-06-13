@@ -14,5 +14,10 @@ describe("binders/default", function () {
     it("should test the route condition", function () {
       expect(def.conditions.route.func("abc", {}, "test")).toBe(false);;
     });
+
+    it("should match a route condition", function () {
+      expect(def.conditions.route.func({route: ["test", "abc"] }, "abc", "test/abc")).toBe(true);;
+
+    });
   });
 });

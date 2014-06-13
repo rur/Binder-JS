@@ -14,7 +14,7 @@ describe("scanner#scan", function() {
 
   describe("parsing", function() {
     it("should take a context and return the parsed data", function (done) {
-      scanner.scan(fp, {filters: [], parsers: []})
+      scanner.scan({filters: [], parsers: []}, fp)
         .then(
           getFailSpy(this, done, 'resolve'),
           function (error) {
@@ -24,21 +24,21 @@ describe("scanner#scan", function() {
     });
 
     it("should get the data from the parser function", function (done) {
-      scanner.scan(fp, {
+      scanner.scan({
           filters: [],
           parsers: [
           new Parser(function test () {
               return false;
-            }, function parse (file_path) {
+            }, function parse () {
               return "something went wrong";
             }),
           new Parser(function test () {
               return true;
-            }, function parse (file_path) {
+            }, function parse () {
               return "some data";
             })
           ]
-        }).then(function (data) {
+        }, fp).then(function (data) {
           expect(data).toEqual("some data");
           done();
         }, function (reason) {
@@ -48,24 +48,24 @@ describe("scanner#scan", function() {
     });
 
     it("should get data from a file", function (done) {
-      scanner.scan(fp, {
+      scanner.scan({
         filters: [],
         parsers: [
           new Parser(function () {
             return true;
           },
-          function (file_path) {
+          function (_, file_path) {
             return whennode.call(fs.readFile, file_path, "utf-8");
           })
         ]
-      }).then(function (data) {
+      }, fp).then(function (data) {
         expect(data).toEqual("this is a test file");
         done();
       }, getFailSpy(this, done, "reject"));
     });
 
     it("should pass a file read error onto the reject handler", function (done) {
-      scanner.scan(fp, {
+      scanner.scan({
         filters: [],
         parsers: [
           new Parser(function () {
@@ -75,7 +75,7 @@ describe("scanner#scan", function() {
             return whennode.call(fs.readFile, "non-existent-file.txt", "utf-8");
           })
         ]
-      }).then(null, function (data) {
+      }, fp).then(null, function (data) {
         expect(data.toString()).toEqual("Error: ENOENT, open 'non-existent-file.txt'");
         done();
       });
@@ -90,7 +90,7 @@ describe("scanner#scan", function() {
           new Parser(spy)
         ]
       };
-      scanner.scan(fp, cx).then(function (d) {
+      scanner.scan(cx, fp).then(function (d) {
         expect(d).toEqual("data");
         expect(spy).wasCalled();
         done();
@@ -110,8 +110,8 @@ describe("scanner#scan", function() {
     });
 
     it("should call a filter on a file", function (done) {
-      scanner.scan(fp, cxt).then(function () {
-        expect(filter).wasCalledWith(fp, cxt);
+      scanner.scan(cxt, fp).then(function () {
+        expect(filter).wasCalledWith(cxt, fp);
         done();
       }, getFailSpy(this, done, "reject"));
     });
@@ -121,7 +121,7 @@ describe("scanner#scan", function() {
       cxt.filters[0] = function () {
         return when.reject("test error");
       };
-      scanner.scan(fp, cxt).then(null, function (reason) {
+      scanner.scan(cxt, fp).then(null, function (reason) {
         expect(reason.toString()).toEqual("test error");
         expect(parse).not.toHaveBeenCalled();
         done();
@@ -133,7 +133,7 @@ describe("scanner#scan", function() {
       cxt.filters[0] = function () {
         throw "some error";
       };
-      scanner.scan(fp, cxt).then(null, function (reason) {
+      scanner.scan(cxt, fp).then(null, function (reason) {
         expect(reason.toString()).toEqual("some error");
         expect(parse).not.toHaveBeenCalled();
         done();
@@ -145,7 +145,7 @@ describe("scanner#scan", function() {
       filter.andCallFake(function () {
         return when.reject();
       });
-      scanner.scan(fp, cxt).then(null, function (reason) {
+      scanner.scan(cxt, fp).then(null, function (reason) {
         expect(reason).not.toBeDefined();
         expect(parse).not.toHaveBeenCalled();
         done();
@@ -154,40 +154,40 @@ describe("scanner#scan", function() {
 
     it("should call filters in the order they were defined", function (done) {
       var spy = jasmine.createSpy("Second Filter");
-      filter.andCallFake(function (p, c) {
+      filter.andCallFake(function (c, p) {
         c.test = "value";
       });
-      spy.andCallFake(function(p, c) {
+      spy.andCallFake(function(c, p) {
         done();
         expect(c.test).toEqual("value");
       });
       cxt.filters.push(spy);
-      scanner.scan(fp, cxt);
+      scanner.scan(cxt, fp);
     });
 
     it("should handle filters asynchronously", function (done) {
       var spy = jasmine.createSpy("Second Filter");
-      filter.andCallFake(function (p, c) {
+      filter.andCallFake(function (c, p) {
         return when().delay(10).then(function () {
           c.test = "value";
         });
       });
-      spy.andCallFake(function(p, c) {
+      spy.andCallFake(function(c, p) {
         expect(c.test).toEqual("value");
         done();
       });
       cxt.filters.push(spy);
-      scanner.scan(fp, cxt);
+      scanner.scan(cxt, fp);
     });
   });
 
   describe("errors", function() {
     it("should timeout", function (done) {
-      scanner.scan(fp, {filters: [], parsers: [
+      scanner.scan({filters: [], parsers: [
         new Parser(function () { return true; }, function () {
           return when.defer().promise;
         })
-      ]}, 10).then(null, function (err) {
+      ]}, fp, 10).then(null, function (err) {
         expect(err.toString()).toEqual("Error: timed out after 10ms");
         done();
       });

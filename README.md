@@ -31,7 +31,7 @@ BinderJS is an experimental rule based parsing tool for recursive scanning opera
 	/**
 	 * Trigger recursion step
 	 */
-	var promise = binder.scan(subject, parentContext);
+	var promise = binder.scan(parentContext, subject);
 	promise.then(function (data) { data === "parsed data from subject" });
 
 	/**
@@ -74,7 +74,7 @@ The following example is a pseudo version of readUTF parser and fileExt predicat
 
 	var def = binder.define('my-fs-reader');
 
-	def.condition('fileExt', function (pth, cxt) {
+	def.condition('fileExt', function (pth, cxt, ext) {
 		return ext === cxt.file.ext;
 	})
 
@@ -113,7 +113,7 @@ Here is how that might be implemented:
 		// collect folder data as an array of its parsed contents
 		var output = [];
 		fs.readdirSync(path).forEach(function (subPath) {
-			var subData = binder.scan(subPath, cxt); // lets pretend this makes sense
+			var subData = binder.scan(cxt, subPath); // lets pretend this makes sense
 			output.push(subData);
 		});
 		return output;

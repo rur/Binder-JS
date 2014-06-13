@@ -29,9 +29,11 @@ describe("Definition", function() {
   });
 
   describe("#parser", function() {
-    var spy, pDef;
+    var spy, baseSpy, pDef;
     beforeEach(function() {
       spy = jasmine.createSpy("Pre Parser");
+      baseSpy = jasmine.createSpy("Pre Parser Base");
+      def.parser("base", spy);
       def.parser("test", "base", spy);
       pDef = def.parsers.test;
     });
@@ -40,8 +42,8 @@ describe("Definition", function() {
       expect(pDef.name).toEqual("test");
     });
 
-    it("should add a base parser field to parser VO", function() {
-      expect(pDef.base).toEqual("base");
+    xit("should add a base parser field to parser VO", function() {
+      expect(pDef.base[0]).toEqual(jasmine.any(Function));
     });
 
     it("should add a base parser field to parser VO", function() {
@@ -52,6 +54,23 @@ describe("Definition", function() {
       var spy2 = jasmine.createSpy("Second Pre Parser");
       def.parser("test_2", spy2);
       expect(def.parsers.test_2.func).toBe(spy2);
+    });
+  });
+
+  describe("#getParser", function () {
+    beforeEach(function () {
+      def.parser("test", function () {
+        "noop";
+      });
+    });
+
+    it("should get a parser that it defines itself", function () {
+      expect(def.getParser("test").name).toEqual("test");
+    });
+
+    it("should get a parsers from a dependency", function () {
+      var def2 = new Definition("test2", [def]);
+      expect(def2.getParser("test").name).toEqual("test");
     });
   });
 

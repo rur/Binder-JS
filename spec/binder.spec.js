@@ -51,7 +51,7 @@ describe("Binder", function() {
 
     it("should call scan", function() {
       binder.compile("some/path");
-      expect(scanner.scan).wasCalledWith("some/path", dup, 123);
+      expect(scanner.scan).wasCalledWith(dup, "some/path", 123);
     });
   });
 });

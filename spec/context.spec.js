@@ -100,20 +100,20 @@ describe("Context", function () {
       });
 
       it("should call the first", function () {
-        cxt.parsers[0].condition("path", cxt);
-        expect(first).wasCalledWith("path", cxt);
+        cxt.parsers[0].condition(cxt, "path");
+        expect(first).wasCalledWith(cxt, "path");
       });
 
       it("should call the second", function () {
         first.andReturn(true);
-        cxt.parsers[0].condition("path", cxt);
-        expect(second).wasCalledWith("path", cxt);
+        cxt.parsers[0].condition(cxt, "path");
+        expect(second).wasCalledWith(cxt, "path");
       });
 
       it("should be true", function () {
         first.andReturn(true);
         second.andReturn(true);
-        expect(cxt.parsers[0].condition("path", cxt)).toBeTruthy();
+        expect(cxt.parsers[0].condition(cxt, "path")).toBeTruthy();
       });
     });
 
@@ -193,7 +193,7 @@ describe("Context", function () {
         });
 
         it("should allow the user define an 'after' parser", function (done) {
-          expr.when(noop).readTest(function (data) {
+          expr.when(noop).readTest(function (_, data) {
             return data + " and added too";
           });
           cxt.parsers[0].parse("path", cxt).then(function (data) {
@@ -203,7 +203,7 @@ describe("Context", function () {
         });
 
         it("should pass the context to the 'after' parser", function (done) {
-          expr.when(noop).readTest(function (data, cxt) {
+          expr.when(noop).readTest(function (cxt, data) {
             expect(cxt).toBeDefined();
             done();
           });
@@ -215,7 +215,7 @@ describe("Context", function () {
             return "promise read data";
           });
 
-          expr.when(noop).readTest(function (data) {
+          expr.when(noop).readTest(function (_, data) {
             var deferred = when.defer();
             setTimeout(function () {
               deferred.resolve(data + " and added too!")
@@ -238,7 +238,7 @@ describe("Context", function () {
             return deferred.promise;
           });
 
-          expr.when(noop).readTest(function (data) {
+          expr.when(noop).readTest(function (_, data) {
             var deferred = when.defer();
             setTimeout(function () {
               deferred.resolve(data + " and added too!")
@@ -249,6 +249,29 @@ describe("Context", function () {
           cxt.parsers[0].parse("path", cxt).then(function (data) {
             expect(data).toEqual("promise read data and added too!");
             done();
+          });
+        });
+
+        xdescribe("base parser with definition", function () {
+          var readSub;
+          beforeEach(function () {
+            readSub = jasmine.createSpy("read test sub").andCallFake(function (data) {
+              return data + " and sub";
+            });
+            syx.parsers["readTestSub"] = {
+              name: "readTestSub",
+              base: "readTest",
+              func: readSub
+            };
+            expr = cxt.createParserExpr();
+          });
+
+          it("should output from both parse handlers", function (done) {
+            expr.when(noop).readTestSub();
+            cxt.parsers[0].parse("path", {mock: "context"}).then(function (data) {
+              expect(data).toEqual("was read and sub");
+              done();
+            });
           });
         });
       });

@@ -70,15 +70,15 @@ describe("scan", function () {
   });
 
   it("should resolve with the raw data", function (done) {
-    index.scan("some/path.test", cxt).then(function (data) {
+    index.scan(cxt, "some/path.test").then(function (data) {
       expect(data).toEqual("some data");
       done();
     }).catch(getFailSpy(this, done, "reject"));
   });
 
   it("should call the filter with the path and context", function (done) {
-    index.scan("some/path.test", cxt).then(function (data) {
-      expect(filter).wasCalledWith("some/path.test", cxt);
+    index.scan(cxt, "some/path.test").then(function (data) {
+      expect(filter).wasCalledWith(cxt, "some/path.test");
       done();
     }).catch(getFailSpy(this, done, "reject"));
   });
