@@ -57,7 +57,7 @@ describe("Context", function () {
       cxt._syntax = syx;
     });
 
-    describe("adding basic parser", function () {
+    xdescribe("adding basic parser", function () {
       function cond () {};
       function parse () {};
       beforeEach(function () {
@@ -86,7 +86,7 @@ describe("Context", function () {
     });
 
 
-    describe("multiple conditions", function () {
+    xdescribe("multiple conditions", function () {
       var first, second;
       beforeEach(function () {
         expr = cxt.createParserExpr();
@@ -117,7 +117,7 @@ describe("Context", function () {
       });
     });
 
-    describe("defined syntax", function () {
+    xdescribe("defined syntax", function () {
       describe("conditions", function () {
         var test;
         beforeEach(function () {
@@ -252,7 +252,7 @@ describe("Context", function () {
           });
         });
 
-        xdescribe("base parser with definition", function () {
+        describe("base parser with definition", function () {
           var readSub;
           beforeEach(function () {
             readSub = jasmine.createSpy("read test sub").andCallFake(function (data) {

@@ -55,14 +55,6 @@ describe("Definition", function() {
       def.parser("test_2", spy2);
       expect(def.parsers.test_2.func).toBe(spy2);
     });
-
-    it("should compute a pipeline property", function () {
-      expect(def.parsers.test.pipeline.length).toEqual(2);
-    });
-
-    it("should not mutate base parser pipline", function () {
-      expect(def.parsers.base.pipeline.length).toEqual(1);
-    });
   });
 
   describe("#getParser", function () {
