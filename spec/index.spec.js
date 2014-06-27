@@ -1,6 +1,6 @@
 var Definition = require("../lib/definition");
 var Binder = require("../lib/binder");
-var Rule = require("../lib/rule");
+var Binder = require("../lib/binder");
 var index = require("../index");
 
 describe("index#create", function() {
@@ -50,9 +50,9 @@ describe("index#create", function() {
   });
 });
 
-describe("index#rule", function() {
-  it("should create a new rule", function() {
-    expect(index.rule({})).toEqual(jasmine.any(Rule));
+describe("index#binder", function() {
+  it("should create a new binder", function() {
+    expect(index.binder({})).toEqual(jasmine.any(Binder));
   });
 });
 

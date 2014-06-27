@@ -1,6 +1,6 @@
 var Binder = require("./lib/binder");
 var Context = require("./lib/context");
-var Rule = require("./lib/rule");
+var Binder = require("./lib/binder");
 var scanner = require("./lib/scanner");
 var register = require("./lib/register");
 
@@ -44,10 +44,10 @@ var binder_js_api = {
    * sub contexts.
    *
    * @param  {Context} cxt The context instance to add the rules too
-   * @return {Rule}     Binder rule
+   * @return {Binder}
    */
-  rule: function (cxt) {
-    return new Rule(cxt);
+  binder: function (cxt) {
+    return new Binder(cxt);
   },
   /**
    * Scan a specified path and return data promise, this is used

@@ -1,6 +1,5 @@
 var Definition = require("../lib/definition");
 var Binder = require("../lib/binder");
-var Rule = require("../lib/rule");
 var register = require("../lib/register");
 
 describe("register", function() {
