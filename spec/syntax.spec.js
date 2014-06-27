@@ -37,24 +37,14 @@ describe("Syntax", function() {
       expect(Object.keys(ci.beginStatement())).toEqual(["testParser", "testCond"]);
     });
 
-    it("should invoke a handler with the commands that were called", function (done) {
-      var spy = function (cmnds) {
-        expect(cmnds.map(function (c) {
-          return c.name
-        })).toEqual(["testCond", "testParser"]);
-        done();
-      };
-      ci.onStatement(spy);
+    it("should invoke a handler with the commands that were called", function () {
       ci.beginStatement().testCond.testParser;
+      expect(ci.statements[0][0].name).toEqual('testCond');
     });
 
-    it("should register args with commands", function (done) {
-      var spy = function (cmnds) {
-        expect(cmnds[1].args).toEqual(["a", "b", 123]);
-        done();
-      };
-      ci.onStatement(spy);
+    it("should register args with commands", function () {
       ci.beginStatement().testCond.testParser("a", "b", 123);
+      expect(ci.statements[0][1].args).toEqual([ 'a', 'b', 123 ]);
     });
   });
 });
