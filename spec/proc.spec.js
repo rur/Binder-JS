@@ -50,7 +50,7 @@ describe("proc", function () {
     });
   });
 
-  describe("#add", function () {
+  describe("#addBefore", function () {
     var p;
     function example2() {}
 
