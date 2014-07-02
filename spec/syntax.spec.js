@@ -20,31 +20,4 @@ describe("Syntax", function() {
     expect(syntax.conditions).toEqual({});
   });
 
-  describe("#commandInterface", function () {
-    var ci;
-
-    beforeEach(function () {
-      syntax.parsers["testParser"] = "something";
-      syntax.conditions["testCond"] = "something else";
-      ci = syntax.commandInterface();
-    });
-
-    it("should return an object", function () {
-      expect(ci).toBeDefined();
-    });
-
-    it("should create an expression", function () {
-      expect(Object.keys(ci.beginStatement())).toEqual(["testParser", "testCond"]);
-    });
-
-    it("should invoke a handler with the commands that were called", function () {
-      ci.beginStatement().testCond.testParser;
-      expect(ci.statements[0][0].name).toEqual('testCond');
-    });
-
-    it("should register args with commands", function () {
-      ci.beginStatement().testCond.testParser("a", "b", 123);
-      expect(ci.statements[0][1].args).toEqual([ 'a', 'b', 123 ]);
-    });
-  });
 });
