@@ -1,5 +1,6 @@
 var Definition = require("../lib/definition");
 var Syntax = require("../lib/syntax");
+var proc = require("../lib/proc");
 
 
 describe("Definition", function() {
@@ -117,10 +118,10 @@ describe("Definition", function() {
     beforeEach(function() {
       depDef = new Definition("dep def");
       depDef.condition("depTest", function() {});
-      depDef.parser("depTestReader", function() {});
+      depDef.parser("depTestReader", function depTestReader() {});
       def = new Definition("test", [depDef]);
       def.condition("test", function() {});
-      def.parser("testReader", function() {});
+      def.parser("testReader", 'depTestReader', function testReader() {});
       syn = def.buildSyntax();
     });
 
@@ -128,20 +129,43 @@ describe("Definition", function() {
       expect(syn).toEqual(jasmine.any(Syntax));
     });
 
-    it("should provide it with the conditions", function() {
-      expect(syn.conditions["test"].name).toEqual("test");
+    describe("conditions", function () {
+
+      it("should have own conditions", function() {
+        expect(syn.conditions["test"].name).toEqual("test");
+      });
+
+      it("should have dependent conditions", function() {
+        expect(syn.conditions["depTest"].name).toEqual("depTest");
+      });
+
+      it("should create a proc for its own condition", function () {
+        expect(syn.conditions.test.proc.length).toEqual(1);
+      });
     });
 
-    it("should extend dep' definition conditions", function() {
-      expect(syn.conditions["depTest"].name).toEqual("depTest");
-    });
+    describe("parsers", function () {
 
-    it("should provide it with parsers", function() {
-      expect(syn.parsers["testReader"].name).toEqual("testReader");
-    });
+      it("should have own parsers", function() {
+        expect(syn.parsers["testReader"].name).toEqual("testReader");
+      });
 
-    it("should provide it with parsers", function() {
-      expect(syn.parsers["depTestReader"].name).toEqual("depTestReader");
+      it("should have dependent parsers", function() {
+        expect(syn.parsers["depTestReader"].name).toEqual("depTestReader");
+      });
+
+      it("should have created a proc for the parser", function () {
+        expect(syn.parsers.testReader.proc).toBeDefined();
+      });
+
+      it("should combine the base parsers into the proc", function () {
+        expect(syn.parsers.testReader.proc.length).toEqual(2);
+        expect(syn.parsers.testReader.proc[0]).toBe(depDef.parsers.depTestReader.func);
+      });
+
+      it("should have created a proc for the dep parsers", function () {
+        expect(syn.parsers.depTestReader.name).toEqual("depTestReader");
+      });
     });
   });
 });
