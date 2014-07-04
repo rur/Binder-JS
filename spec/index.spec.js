@@ -1,6 +1,6 @@
 var Definition = require("../lib/definition");
 var Binder = require("../lib/binder");
-var Binder = require("../lib/binder");
+var Context = require("../lib/context");
 var index = require("../index");
 
 xdescribe("index#create", function() {
@@ -50,36 +50,27 @@ xdescribe("index#create", function() {
   });
 });
 
-xdescribe("index#binder", function() {
-  it("should create a new binder", function() {
-    expect(index.binder({})).toEqual(jasmine.any(Binder));
+describe("jsBidner.define", function () {
+  it("should create a definition object", function () {
+    expect(index.define('test')).toEqual(jasmine.any(Definition));
+  });
+
+  it("should add dependent definitions", function () {
+    var test = index.define('test');
+    expect(index.define('test2', [test]).deps[0]).toBe(test);
   });
 });
 
-xdescribe("scan", function () {
-  var cxt, parser, filter;
-  beforeEach(function () {
-    parser = jasmine.createSpyObj("Parser", ["condition", "parse"]);
-    parser.condition.andReturn(true);
-    parser.parse.andReturn("some data");
-    filter = jasmine.createSpy("Filter");
-    cxt = {
-      parsers: [parser],
-      filters: [filter]
-    };
+describe("jsBinder", function() {
+  it("should create a binder from a context", function() {
+    expect(index(new Context)).toEqual(jasmine.any(Binder));
   });
 
-  it("should resolve with the raw data", function (done) {
-    index.scan(cxt, "some/path.test").then(function (data) {
-      expect(data).toEqual("some data");
-      done();
-    }).catch(getFailSpy(this, done, "reject"));
-  });
-
-  it("should call the filter with the path and context", function (done) {
-    index.scan(cxt, "some/path.test").then(function (data) {
-      expect(filter).wasCalledWith(cxt, "some/path.test");
-      done();
-    }).catch(getFailSpy(this, done, "reject"));
+  it("should dup the context", function () {
+    var cxt = new Context();
+    var dupCxt = new Context();
+    spyOn(cxt, 'dup').andReturn(dupCxt);
+    expect(index(cxt).context).toBe(dupCxt);
+    expect(cxt.dup).wasCalled();
   });
 });
