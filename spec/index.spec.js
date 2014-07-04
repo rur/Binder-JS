@@ -3,7 +3,7 @@ var Binder = require("../lib/binder");
 var Binder = require("../lib/binder");
 var index = require("../index");
 
-describe("index#create", function() {
+xdescribe("index#create", function() {
   var binder;
   beforeEach(function() {
     index.define("test")
@@ -50,13 +50,13 @@ describe("index#create", function() {
   });
 });
 
-describe("index#binder", function() {
+xdescribe("index#binder", function() {
   it("should create a new binder", function() {
     expect(index.binder({})).toEqual(jasmine.any(Binder));
   });
 });
 
-describe("scan", function () {
+xdescribe("scan", function () {
   var cxt, parser, filter;
   beforeEach(function () {
     parser = jasmine.createSpyObj("Parser", ["condition", "parse"]);

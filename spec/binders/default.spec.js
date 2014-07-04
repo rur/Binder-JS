@@ -1,7 +1,7 @@
 var mkdefault = require('../../lib/binders/default');
 var Definition = require("../../lib/definition");
 
-describe("binders/default", function () {
+xdescribe("binders/default", function () {
   var def;
   beforeEach(function () {
     def = mkdefault();

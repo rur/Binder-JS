@@ -96,7 +96,7 @@ describe("Binder", function() {
       });
 
       it("should add default params to procs", function () {
-        expect(parser.condition.defaultParams).toEqual([undefined, undefined, 1, 2]);
+        expect(parser.condition.defaultParams).toEqual(['[data here]', '[context here]', 1, 2]);
       });
     });
   });

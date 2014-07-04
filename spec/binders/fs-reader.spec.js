@@ -9,7 +9,7 @@ require('../../lib/binders/fs-reader');
 
 var fixturesDir = path.resolve(__dirname, "../fixtures");
 
-describe("binders/fs-reader", function () {
+xdescribe("binders/fs-reader", function () {
 
   var def;
   beforeEach(function () {
