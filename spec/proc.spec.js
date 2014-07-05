@@ -32,6 +32,11 @@ describe("proc", function () {
       var p2 = proc(p);
       expect(p2[0]).toBe(example);
     });
+
+    it("should pass a proc back", function () {
+      var p = proc(example);
+      expect(proc(p)).toBe(p);
+    });
   });
 
   describe("#add", function () {
@@ -47,6 +52,11 @@ describe("proc", function () {
 
     it("should increment the length", function () {
       expect(p.length).toEqual(2);
+    });
+
+    it("should add a proc", function () {
+      p.add(proc(example));
+      expect(p.length).toEqual(3);
     });
   });
 
@@ -88,7 +98,7 @@ describe("proc", function () {
     beforeEach(function () {
       spy = jasmine.createSpy('curried method');
       p = proc(spy, spy);
-      p.defaultArgs = [1, 2, 3];
+      p.defaultParams = [1, 2, 3];
       curried = p.currySeries();
     });
 
@@ -106,7 +116,7 @@ describe("proc", function () {
     });
 
     it("should work with no default args", function () {
-      p.defaultArgs = null;
+      p.defaultParams = null;
       p.currySeries()[0]("a");
       expect(spy).wasCalledWith("a");
     });
