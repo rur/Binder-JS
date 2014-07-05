@@ -82,4 +82,33 @@ describe("proc", function () {
       expect(arr).toEqual([example]);
     });
   });
+
+  describe("#currySeries", function () {
+    var p, spy, curried;
+    beforeEach(function () {
+      spy = jasmine.createSpy('curried method');
+      p = proc(spy, spy);
+      p.defaultArgs = [1, 2, 3];
+      curried = p.currySeries();
+    });
+
+    it("should return an array", function () {
+      expect(curried).toEqual(jasmine.any(Array));
+    });
+
+    it("should have the same length as the proc", function () {
+      expect(curried.length).toEqual(p.length);
+    });
+
+    it("should call with default args", function () {
+      curried[1]("a", "b");
+      expect(spy).wasCalledWith("a", "b", 3);
+    });
+
+    it("should work with no default args", function () {
+      p.defaultArgs = null;
+      p.currySeries()[0]("a");
+      expect(spy).wasCalledWith("a");
+    });
+  });
 });
