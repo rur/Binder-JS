@@ -93,13 +93,13 @@ describe("proc", function () {
     });
   });
 
-  describe("#currySeries", function () {
+  describe("#liftSeries", function () {
     var p, spy, curried;
     beforeEach(function () {
       spy = jasmine.createSpy('curried method');
       p = proc(spy, spy);
       p.defaultParams = [1, 2, 3];
-      curried = p.currySeries();
+      curried = p.liftSeries();
     });
 
     it("should return an array", function () {
@@ -117,8 +117,36 @@ describe("proc", function () {
 
     it("should work with no default args", function () {
       p.defaultParams = null;
-      p.currySeries()[0]("a");
+      p.liftSeries()[0]("a");
       expect(spy).wasCalledWith("a");
+    });
+  });
+
+  describe("#liftPredicate", function () {
+    var p, spy, pred;
+    beforeEach(function () {
+      spy = jasmine.createSpy("curried predicate");
+      spy.andReturn(true);
+      p = proc(spy, spy);
+      p.defaultParams = [1,2,3];
+      pred = p.liftPredicate();
+    });
+
+    it("should return true", function () {
+      expect(pred()).toBe(true);
+    });
+
+    it("should curry the functions", function () {
+      pred("a");
+      expect(spy).wasCalledWith("a", 2, 3);
+    });
+
+    it("should return false if a function returns false", function () {
+      p.add(function () {
+        return false;
+      });
+      pred = p.liftPredicate();
+      expect(pred()).toBe(false);
     });
   });
 });
