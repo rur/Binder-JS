@@ -53,7 +53,7 @@ describe("Binder", function() {
     it("should call scan", function() {
       binder.compileTimeout = 123;
       binder.compile("some/path");
-      expect(scanner.scan).wasCalledWith(binder.context, "some/path", 123);
+      expect(scanner.scan).wasCalledWith("some/path", binder.context, 123);
     });
 
     describe("parsers", function () {

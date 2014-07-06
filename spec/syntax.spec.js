@@ -20,4 +20,30 @@ describe("Syntax", function() {
     expect(syntax.conditions).toEqual({});
   });
 
+  describe("#getParser", function () {
+    it("should get a parser", function () {
+      syntax.parsers["test"] = "abc";
+      expect(syntax.getParser("test")).toEqual("abc");
+    });
+
+    it("should throw an error", function () {
+      expect(function () {
+        syntax.getParser("test");
+      }).toThrow("Unknown parser: 'test'");
+    });
+  });
+
+  describe("#getCondition", function () {
+    it("should get a parser", function () {
+      syntax.conditions["test"] = "abc";
+      expect(syntax.getCondition("test")).toEqual("abc");
+    });
+
+    it("should throw an error", function () {
+      expect(function () {
+        syntax.getCondition("test");
+      }).toThrow("Unknown condition: 'test'");
+    });
+  });
+
 });
