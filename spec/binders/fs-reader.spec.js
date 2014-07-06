@@ -3,17 +3,21 @@ var fs = require("fs");
 var Definition = require("../../lib/definition");
 var Context = require("../../lib/context");
 var Binder = require("../../lib/binder");
-var register = require("../../lib/register");
+var index = require("../../index");
 
-require('../../lib/binders/fs-reader');
+var fsReader = require('../../lib/binders/fs-reader');
 
 var fixturesDir = path.resolve(__dirname, "../fixtures");
 
-xdescribe("binders/fs-reader", function () {
+describe("binders/fs-reader", function () {
 
   var def;
   beforeEach(function () {
-    def = register.getDef("fs-reader");
+    def = fsReader();
+  });
+
+  it("should create a definition", function () {
+    expect(def).toEqual(jasmine.any(Definition));
   });
 
   describe("conditions", function() {
@@ -35,9 +39,12 @@ xdescribe("binders/fs-reader", function () {
       });
 
       it("should select by route", function (done) {
-        binder.parse.route("otherSubDir/sibling").fileExt(".txt").readUTF(function (_, data) {
-          return data + " with more!";
-        });
+        binder.parse
+          .route("./otherSubDir/sibling/*")
+          .fileExt(".txt")
+          .readUTF(function (data) {
+            return data + " with more!";
+          });
         binder.compile(path.resolve(fixturesDir, "nestedData/")).then(function (data) {
           expect(data.otherSubDir.sibling["test.txt"]).toEqual("data file with more!");
           done();
@@ -48,16 +55,17 @@ xdescribe("binders/fs-reader", function () {
     });
   });
 
-  xdescribe("parsing", function () {
+  describe("parsing", function () {
     var binder, res, rej, cxt;
     beforeEach(function () {
-      cxt = new Context();
-      cxt._syntax = def.buildSyntax();
-      binder = new Binder(cxt);
-      def.initialize(binder);
+      binder = index(def);
       //
       res = jasmine.createSpy("Resolve Handler");
       rej = jasmine.createSpy("Reject Handler");
+    });
+
+    it("should create a new binder", function () {
+      expect(binder).toEqual(jasmine.any(Binder));
     });
 
     describe("defined filters", function () {
@@ -75,7 +83,7 @@ xdescribe("binders/fs-reader", function () {
         });
 
         it("should ignore a value that is not a path", function (done) {
-          binder.compile("seome/invalid/path")
+          binder.compile("some/invalid/path")
             .then(getFailSpy(this, done, "resolve"), function (reason) {
               expect(reason).toBeUndefined();
               done();
@@ -92,10 +100,10 @@ xdescribe("binders/fs-reader", function () {
       });
 
       describe("route", function () {
-        it("should start as an empty array", function (done) {
+        it("should start as a dot", function (done) {
           binder.filter(function (fp, cx) {
             done();
-            expect(cx.route).toEqual([]);
+            expect(cx.route).toEqual(['.']);
           });
           binder.compile(path.resolve(fixturesDir, "nestedData/someFile.skip"));
         });
@@ -103,18 +111,18 @@ xdescribe("binders/fs-reader", function () {
         it("should add a dir name to the route", function (done) {
           binder.filter(function (fp, cx) {
             if (cx.file.name == "subDir") {
+              expect(cx.route).toEqual([".", "subDir"]);
               done();
-              expect(cx.route).toEqual(["subDir"]);
             }
           });
-          binder.compile(path.resolve(fixturesDir, "nestedData/"));
+          binder.compile(path.resolve(fixturesDir, "nestedData/")).catch(getFailSpy(this, done, 'reject'));
         });
 
         it("should add manage route in sub folders children", function (done) {
           binder.filter(function (fp, cx) {
             if (cx.file.name === "siblingRoute.txt") {
               done();
-              expect(cx.route.join("/")).toEqual("otherSubDir/sibling copy 2");
+              expect(cx.route.join("/")).toEqual("./otherSubDir/sibling copy 2/siblingRoute.txt");
             }
           });
           binder.compile(path.resolve(fixturesDir, "nestedData/"));
@@ -148,6 +156,10 @@ xdescribe("binders/fs-reader", function () {
           binder.context.fileScanLimit.max = 10;
           binder.compile(path.resolve(fixturesDir, "nestedData/someFile.skip"))
             .then(getFailSpy(this, done, "resolve"), function (reason) {
+              if (!(reason instanceof Error)) {
+                done("limit was not reached");
+                return;
+              };
               expect(reason.toString()).toEqual("Error: File Scan limit reached");
               done();
             })
