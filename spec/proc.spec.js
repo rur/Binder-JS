@@ -120,6 +120,11 @@ describe("proc", function () {
       p.liftSeries()[0]("a");
       expect(spy).wasCalledWith("a");
     });
+
+    it("should combine arguments with default params when currying", function () {
+      p.liftSeries(undefined, "hello")[0](true);
+      expect(spy).wasCalledWith(true, "hello", 3);
+    });
   });
 
   describe("#liftPredicate", function () {
@@ -147,6 +152,21 @@ describe("proc", function () {
       });
       pred = p.liftPredicate();
       expect(pred()).toBe(false);
+    });
+
+    it("should combine arguments with defaultParams when currying", function () {
+      pred = p.liftPredicate(undefined, "hello");
+      pred("abc");
+      expect(spy).wasCalledWith("abc", "hello", 3);
+    });
+
+    it("should work with a spy", function () {
+      var spy = jasmine.createSpy();
+      var p = proc(spy);
+      p.defaultParams[3] = "hello";
+      pred = p.liftPredicate(1,2,3);
+      pred("a");
+      expect(spy).wasCalledWith("a", 2, 3, 'hello');
     });
   });
 });
