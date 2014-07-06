@@ -5,17 +5,18 @@ var scanner = require("../lib/scanner");
 var proc = require("../lib/proc");
 
 describe("Binder", function() {
-  var binder, syntax;
+  var binder, syntax, testSpy;
 
   beforeEach(function() {
     syntax = new Syntax();
+    testSpy = jasmine.createSpy("test condition");
     syntax.parsers.action = {
       name: "action",
       proc: proc(function () {})
     };
     syntax.conditions.test = {
       name: "test",
-      proc: proc(function () {})
+      proc: proc(testSpy)
     };
     binder = new Binder({
       mock: "context",
@@ -113,7 +114,8 @@ describe("Binder", function() {
       });
 
       it("should add default params to procs", function () {
-        expect(parser.condition.defaultParams).toEqual(['[data here]', '[context here]', 1, 2]);
+        parser.condition[0]('test', {mock: "context"});
+        expect(testSpy).wasCalledWith('test', {mock: "context"}, 1, 2);
       });
     });
   });
