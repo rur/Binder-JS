@@ -116,7 +116,7 @@ describe("proc", function () {
     });
 
     it("should work with no default args", function () {
-      p.defaultParams = null;
+      p.defaultParams = [];
       p.liftSeries()[0]("a");
       expect(spy).wasCalledWith("a");
     });

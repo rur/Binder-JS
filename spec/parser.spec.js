@@ -8,11 +8,11 @@ describe("parser", function() {
     parser = new Parser(condition, parse);
   });
 
-  it("should pass the condition function to itself", function() {
-    expect(parser.condition).toBe(condition);
+  it("should create a proc from the condition function", function() {
+    expect(parser.condition[0]).toBe(condition);
   });
 
-  it("should pass the parse function to itself", function() {
-    expect(parser.parse).toBe(parse);
+  it("should create a proc from the parse function", function() {
+    expect(parser.parse[0]).toBe(parse);
   });
 });
