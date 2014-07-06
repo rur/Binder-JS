@@ -1,7 +1,7 @@
 var mkdefault = require('../../lib/binders/default');
 var Definition = require("../../lib/definition");
 
-xdescribe("binders/default", function () {
+describe("binders/default", function () {
   var def;
   beforeEach(function () {
     def = mkdefault();
@@ -12,12 +12,11 @@ xdescribe("binders/default", function () {
 
   describe("route condition", function () {
     it("should test the route condition", function () {
-      expect(def.conditions.route.func("abc", {}, "test")).toBe(false);;
+      expect(def.conditions.route.func("abc", {}, "test")).toBe(false);
     });
 
     it("should match a route condition", function () {
-      expect(def.conditions.route.func({route: ["test", "abc"] }, "abc", "test/abc")).toBe(true);;
-
+      expect(def.conditions.route.func({route: ["test", "abc"] }, "abc", "test/abc")).toBe(true);
     });
   });
 });

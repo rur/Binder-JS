@@ -142,6 +142,10 @@ describe("Definition", function() {
       it("should create a proc for its own condition", function () {
         expect(syn.conditions.test.proc.length).toEqual(1);
       });
+
+      it("should have the default conditions", function () {
+        expect(syn.conditions.always).toBeDefined();
+      });
     });
 
     describe("parsers", function () {
@@ -165,6 +169,10 @@ describe("Definition", function() {
 
       it("should have created a proc for the dep parsers", function () {
         expect(syn.parsers.depTestReader.name).toEqual("depTestReader");
+      });
+
+      it("should have the default parsers", function () {
+        expect(syn.parsers.ignore).toBeDefined();
       });
     });
   });
