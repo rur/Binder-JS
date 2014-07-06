@@ -48,12 +48,29 @@ describe("Binder", function() {
     var dup;
     beforeEach(function() {
       spyOn(scanner, "scan");
+      dup = {
+        mock: "dup context",
+        filters: [],
+        parsers: [],
+        _syntax: syntax
+      };
+      binder.context.dup = jasmine.createSpy().andReturn(dup);
     });
 
     it("should call scan", function() {
       binder.compileTimeout = 123;
       binder.compile("some/path");
-      expect(scanner.scan).wasCalledWith("some/path", binder.context, 123);
+      expect(scanner.scan).wasCalledWith("some/path", dup, 123);
+    });
+
+    it("should append a path to the route", function () {
+      binder.compile("some/path", "path");
+      expect(dup.route).toEqual(["path"]);
+    });
+
+    it("should append a dot if route is not specified", function () {
+      binder.compile("some/path");
+      expect(dup.route).toEqual(["."]);
     });
 
     describe("parsers", function () {
@@ -66,7 +83,7 @@ describe("Binder", function() {
             .test(1,2, function testFn() {})
             .action(function actionFn() {});
         binder.compile("something");
-        parser = binder.context.parsers[0];
+        parser = dup.parsers[0];
       });
 
       it("should create a parser", function () {

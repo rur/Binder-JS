@@ -14,7 +14,7 @@ function jsBinder(setup) {
     binder = new Binder(cxt);
     def.initialize(binder);
   } else if (setup instanceof Context) {
-    cxt = setup.dup();
+    cxt = setup;
     binder = new Binder(cxt);
   } else {
     throw new Error("Binder setup must either be a definition or the context from another binder process. Given: (" + setup + ")" );

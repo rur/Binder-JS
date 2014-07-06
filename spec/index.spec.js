@@ -62,13 +62,5 @@ describe("jsBinder", function() {
     it("should create a binder from a context", function() {
       expect(index(new Context)).toEqual(jasmine.any(Binder));
     });
-
-    it("should dup the context", function () {
-      var cxt = new Context();
-      var dupCxt = new Context();
-      spyOn(cxt, 'dup').andReturn(dupCxt);
-      expect(index(cxt).context).toBe(dupCxt);
-      expect(cxt.dup).wasCalled();
-    });
   });
 });
