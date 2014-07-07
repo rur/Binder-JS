@@ -5,6 +5,10 @@ BinderJS is an experimental rule based parsing tool for recursive parsing operat
 
 The objective is to simplify parsing scripts by providing developers with a convention for composing a procedure from generalized commands which they can define and extend.
 
+*DO NOT USE!*
+
+This is a curiosity project, neither the implementation nor the API can be considered stable.
+
 **Install:**
 
 	npm install binder-js
@@ -17,7 +21,7 @@ The objective is to simplify parsing scripts by providing developers with a conv
 	 * Register your own syntax definition
 	 */
 	var def = binder.define('my-binder-def');
-	def.condition('isTrue', function (subject, context) {return context.subjectType === 'string;});
+	def.condition('isTrue', function (subject, context) {return context.subjectType === 'string';});
 	def.parser('myParser', function (subject, context) { return 'the data' });
 	def.init(function (parserInstance) {
 		// add default rules here
@@ -40,7 +44,6 @@ The objective is to simplify parsing scripts by providing developers with a conv
 
 	/**
 	 * Recursion
-	 *
 	 * where subject = 'some/folder'
 	 */
 	def.parser("parseFolder", function (subject, cxt) {
@@ -57,7 +60,7 @@ Basic Example
 One use case could be to read data from the file system into memory. In the following example a folder is parsed which contains a single json file.
 
 	var binder = require('binder-js');
-	var def = binder.loadDef("fs-reader");
+	var def = binder.loadDef("fs-reader"); // built in definition
 
 	// instantiate a parser from the 'fs-reader' syntax definition
 	// This comes with a special syntax and some predefined rules
@@ -137,7 +140,7 @@ Here is pseudocode for that implementation:
 Context Filters
 -----------
 
-As the process progresses, the context needs to be transformed at every stage. For the most part responsibility for this lies with filter functions which get called before any rules get checked. Filters are registered on the parser and every filter get called in the order they were added at the beginning of _every_ step. It has the opportunity to add data to the context object before the predicate functions get called. It can also return a promise if it's work is async.
+As the process steps forward, the context needs to be transformed at every stage. The responsibility for this lies with filter functions which get called before any rules get checked. Filters are registered on the parser and every filter get called in the order they were added at the beginning of _every_ step. It has the opportunity to add data to the context object before the predicate functions get called. It can also return a promise if it's work is async.
 
 Here is an example of the filter that loads info about a file before any parser handles it. This info is typically used by predicates to test if a particular parse rule is applicable.
 
@@ -162,3 +165,5 @@ Here is an example of the filter that loads info about a file before any parser 
 ### In conclusion
 
 Reading from the file system is just one application, it should be capable of managing any recursive scan process. For example it could be used to crawl web links or parse an XML document.
+
+Again, DON'T USE THIS for anything important!
