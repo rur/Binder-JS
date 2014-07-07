@@ -64,3 +64,9 @@ describe("jsBinder", function() {
     });
   });
 });
+
+describe("jsBinder.loadDef", function () {
+  it("should load fs-reader", function () {
+    expect(index.loadDef('fs-reader')).toEqual(jasmine.any(Definition));
+  });
+});

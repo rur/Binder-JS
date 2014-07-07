@@ -34,6 +34,20 @@ jsBinder.define = function defineBinder(name, dep) {
   return new Definition(name, dep);
 };
 
+/**
+ * Load one of the built in parser definitions
+ *
+ * @param  {string}     name The name of the parser to load
+ * @return {Definition}      The populated definition
+ */
+jsBinder.loadDef = function loadDef(name) {
+  try {
+    return require("./lib/binders/" + name)();
+  } catch (er) {
+    throw new Error("Unable to load parser definition: '" + name + "'");
+  }
+};
+
 
 // Export API
 module.exports = jsBinder;
