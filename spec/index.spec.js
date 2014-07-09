@@ -43,17 +43,11 @@ describe("jsBinder", function() {
       expect(binder.parse.readTest).toEqual(jasmine.any(Function));
     });
 
-    it("should error if a specified definition wasn't found", function() {
-      expect(function () {
-        index("unknown");
-      }).toThrow("Binder setup must either be a definition or the context from another binder process. Given: (unknown)");
-    });
-
     it("should apply definition init", function() {
       expect(binder.statements.length).toBeGreaterThan(0);
     });
 
-    xit("should have default definition applied", function() {
+    it("should have default definition applied", function() {
       expect(binder.parse.ignore).toEqual(jasmine.any(Function));
     });
   });
@@ -61,6 +55,16 @@ describe("jsBinder", function() {
   describe("create from context", function () {
     it("should create a binder from a context", function() {
       expect(index(new Context)).toEqual(jasmine.any(Binder));
+    });
+  });
+
+  describe("create from a definition name", function () {
+    it("should create a binder", function () {
+      expect(index("fs-reader")).toEqual(jasmine.any(Binder));
+    });
+
+    it("should create a default binder", function () {
+      expect(index()).toEqual(jasmine.any(Binder));
     });
   });
 });

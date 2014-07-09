@@ -7,17 +7,19 @@ var Definition = require("./lib/definition");
 
 function jsBinder(setup) {
   var cxt, def, binder;
-  if (setup instanceof Definition) {
-    def = setup;
+  if (setup instanceof Context) {
+    cxt = setup;
+    binder = new Binder(cxt);
+  } else {
+    if (setup instanceof Definition ) {
+      def = setup;
+    } else {
+      def = jsBinder.loadDef((setup || 'default'));
+    }
     cxt = new Context();
     cxt._syntax = def.buildSyntax();
     binder = new Binder(cxt);
     def.initialize(binder);
-  } else if (setup instanceof Context) {
-    cxt = setup;
-    binder = new Binder(cxt);
-  } else {
-    throw new Error("Binder setup must either be a definition or the context from another binder process. Given: (" + setup + ")" );
   }
   return binder;
 }
