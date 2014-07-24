@@ -82,12 +82,11 @@ describe("binders/fs-reader", function () {
           binder.compile(path.resolve(fixturesDir, "nestedData/someFile.skip"));
         });
 
-        it("should ignore a value that is not a path", function (done) {
+        it("should reject with an error if a value is not a valid path", function (done) {
           binder.compile("some/invalid/path")
             .then(getFailSpy(this, done, "resolve"), function (reason) {
-              expect(reason).toBeUndefined();
-              done();
-            });
+              expect(reason.toString()).toEqual("Error: ENOENT, stat 'some/invalid/path'");
+            }).then(done, done);
         });
 
         it("should ignore a value that is not a path", function (done) {
