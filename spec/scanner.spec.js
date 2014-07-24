@@ -18,7 +18,7 @@ describe("scanner#scan", function() {
         .then(
           getFailSpy(this, done, 'resolve'),
           function (error) {
-            expect(error).toBe("No parser found");
+            expect(error.message).toEqual("No parser found");
             done();
           });
     });
