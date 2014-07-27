@@ -14,7 +14,7 @@ describe("Definition", function() {
   });
 
   it("should create an empty list of dependencies", function() {
-    expect(def.deps).toEqual([]);
+    expect(def.requires).toEqual([]);
   });
 
   it("should have an object for parsers", function() {
@@ -27,6 +27,10 @@ describe("Definition", function() {
 
   it("should have an array for init functions", function() {
     expect(def.inits).toEqual([]);
+  });
+
+  it("should add required definitions array", function () {
+    expect((new Definition('test', ['testDep'])).requires).toEqual(['testDep']);
   });
 
   describe("#parser", function() {
@@ -58,23 +62,6 @@ describe("Definition", function() {
     });
   });
 
-  describe("#getParser", function () {
-    beforeEach(function () {
-      def.parser("test", function () {
-        "noop";
-      });
-    });
-
-    it("should get a parser that it defines itself", function () {
-      expect(def.getParser("test").name).toEqual("test");
-    });
-
-    it("should get a parsers from a dependency", function () {
-      var def2 = new Definition("test2", [def]);
-      expect(def2.getParser("test").name).toEqual("test");
-    });
-  });
-
   describe("#condition", function() {
     var spy;
     beforeEach(function() {
@@ -103,29 +90,21 @@ describe("Definition", function() {
       def.initialize(binder);
       expect(initl).wasCalledWith(binder);
     });
-
-    it("should run dependent init functions first", function() {
-      var sub = new Definition("sub", [def]);
-      var initl2 = jasmine.createSpy("sub binder initl");
-      sub.init(initl2);
-      sub.initialize(binder);
-      expect(initl).wasCalledWith(binder);
-    });
   });
 
   describe("buildSyntax", function() {
     var depDef, syn;
     beforeEach(function() {
-      depDef = new Definition("dep def");
-      depDef.condition("depTest", function() {});
-      depDef.parser("depTestReader", function depTestReader() {});
-      def = new Definition("test", [depDef]);
+      def = new Definition("test", ['depDef']);
       def.condition("test", function() {});
       def.parser("testReader", 'depTestReader', function testReader() {});
-      syn = def.buildSyntax();
+      syn = new Syntax();
+      syn.conditions.depTest = {name: 'depTest'};
+      syn.parsers.depTestReader = {name: 'depTestReader', proc: function depTestReader() {}};
+      def.buildSyntax(syn);
     });
 
-    it("should create syntax file", function() {
+    it("should create syntax object", function() {
       expect(syn).toEqual(jasmine.any(Syntax));
     });
 
@@ -141,10 +120,6 @@ describe("Definition", function() {
 
       it("should create a proc for its own condition", function () {
         expect(syn.conditions.test.proc.length).toEqual(1);
-      });
-
-      it("should have the default conditions", function () {
-        expect(syn.conditions.always).toBeDefined();
       });
     });
 
@@ -164,15 +139,16 @@ describe("Definition", function() {
 
       it("should combine the base parsers into the proc", function () {
         expect(syn.parsers.testReader.proc.length).toEqual(2);
-        expect(syn.parsers.testReader.proc[0]).toBe(depDef.parsers.depTestReader.func);
+        expect(syn.parsers.testReader.proc[0].name).toBe('depTestReader');
       });
 
       it("should have created a proc for the dep parsers", function () {
         expect(syn.parsers.depTestReader.name).toEqual("depTestReader");
       });
 
-      it("should have the default parsers", function () {
-        expect(syn.parsers.ignore).toBeDefined();
+      it("should throw an error if they base parser doesn't exist", function () {
+        def.parser('test2', 'unknownBase', function() {});
+        expect(def.buildSyntax.bind(def, syn)).toThrow("test#test2: Base parser 'unknownBase' was not found");
       });
     });
   });
