@@ -22,7 +22,7 @@ describe("Binder", function() {
       mock: "context",
       filters: [],
       parsers: [],
-      _syntax: syntax
+      syntax: syntax
     });
   });
 
@@ -53,7 +53,7 @@ describe("Binder", function() {
         mock: "dup context",
         filters: [],
         parsers: [],
-        _syntax: syntax
+        syntax: syntax
       };
       binder.context.dup = jasmine.createSpy().andReturn(dup);
     });
