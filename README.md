@@ -90,13 +90,15 @@ The following example is a pseudo version of readUTF parser and fileExt predicat
 
 	var def = binder.define('my-fs-reader');
 
-	def.condition('fileExt', function (pth, cxt, ext) {
-		return ext === cxt.file.ext;
+	def.condition('fileExists', function (pth, cxt, ext) {
+		return fs.existsSync(pth);
 	})
 
 	def.parser("readUTF", function (pth, cxt) {
 	  return fs.readFileSync(pth, "utf-8");
 	});
+
+
 
 In our first example we invoked readUTF with an additional handler which served as a hook for JSON.parse. Internally that function is queued to handle the value returned/resolved from the defined parser. Hence you can see how data can be piped and remapped.
 
