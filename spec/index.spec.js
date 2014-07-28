@@ -52,6 +52,40 @@ describe("jsBinder", function() {
     });
   });
 
+  describe("create with multiple definitions", function () {
+    var binder, tdef, t2def;
+    beforeEach(function () {
+      tdef = index.define('test');
+      tdef.parser('test', function () {
+        return "test parser";
+      });
+      t2def = index.define('test2', ['test']);
+      t2def.condition('test2', function () { return true });
+      t2def.parser('testExt', 'test', function (d) { return d + " and more!" });
+      binder = index([t2def, tdef]);
+    });
+
+    it("should apply the test def", function () {
+      expect(binder.parse.test).toEqual(jasmine.any(Function));
+    });
+
+    it("should apply the test2 def", function () {
+      expect(binder.parse.test2).toEqual(jasmine.any(Function));
+    });
+
+    it("should allow sub def use parent for base of parsers", function () {
+      // nasty but useful
+      expect(binder.context.syntax.parsers.testExt.proc.length).toEqual(2);
+    });
+
+    it("should complain if a required def is not there", function () {
+      tdef.requires.push('unknown');
+      expect(function () {
+        index([t2def, tdef]);
+      }).toThrow("Unable to load parser definition: 'unknown'");
+    });
+  });
+
   describe("create from context", function () {
     it("should create a binder from a context", function() {
       expect(index(new Context)).toEqual(jasmine.any(Binder));

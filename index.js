@@ -3,9 +3,16 @@ var Context = require("./lib/context");
 var Syntax = require("./lib/syntax");
 var Definition = require("./lib/definition");
 
-// binders
-// require('./lib/binders/fs-reader');
-
+/**
+ * Creates a new binder instance which can be used to define rules
+ * and execute a compile process.
+ *
+ * It will create a fresh context and syntax build from any definitions supplied.
+ * Otherwise a pre-configured context can be used to create the instance from.
+ *
+ * @param  {mixed} init Either zero or more Definitions or a pre-configured Context
+ * @return {Binder}     Your new binder instance
+ */
 function jsBinder(init) {
   if (init instanceof Context) {
     return new Binder(init);
@@ -78,8 +85,8 @@ function _createBinder(setup) {
  * allows zero or more binder definitions to be specified
  * by the definition instance or definition name (using #loadDef)
  *
- * A set of definitions can be provided as an array or hash by def
- * name. This function is recursive when handling collections
+ * A set of definitions can be provided as an array.
+ * This function is recursive when handling collections
  *
  * @param  {Object} defs  The definition setup map
  * @param  {mixed} init   The arguments to extract a set of definitions out of
@@ -93,11 +100,6 @@ function _handleInit(defs, init) {
   } else
   if (init instanceof Array) {
     init.forEach(_handleInit.bind(null, defs));
-  } else
-  if (init instanceof Object) {
-    Object.keys(init).forEach(function (key) {
-      _handleInit(defs, init[key]);
-    });
   }
 }
 
