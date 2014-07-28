@@ -1,3 +1,5 @@
+var p = require("path");
+
 var Binder = require("./lib/binder");
 var Context = require("./lib/context");
 var Syntax = require("./lib/syntax");
@@ -43,7 +45,7 @@ jsBinder.define = function defineBinder(name, dep) {
  */
 jsBinder.loadDef = function loadDef(name) {
   try {
-    return require("./lib/binders/" + name)();
+    return require(p.resolve(__dirname, "lib", "binders", name))();
   } catch (er) {
     throw new Error("Unable to load parser definition: '" + name + "'");
   }
