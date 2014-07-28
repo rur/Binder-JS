@@ -78,11 +78,23 @@ describe("jsBinder", function() {
       expect(binder.context.syntax.parsers.testExt.proc.length).toEqual(2);
     });
 
+    it("should have the defined from list", function () {
+      expect(binder.context.syntax.definedBy).toEqual([ 'default', 'test', 'test2' ]);
+    });
+
     it("should complain if a required def is not there", function () {
       tdef.requires.push('unknown');
       expect(function () {
         index([t2def, tdef]);
       }).toThrow("Unable to load parser definition: 'unknown'");
+    });
+
+    it("should only initialize any definition once", function () {
+      var odef = index.define('test2b', ['test']);
+      var spy = jasmine.createSpy('init');
+      tdef.init(spy);
+      binder = index([tdef, odef, t2def, tdef]);
+      expect(spy.callCount).toEqual(1);
     });
   });
 
@@ -97,7 +109,7 @@ describe("jsBinder", function() {
       expect(index("fs-reader")).toEqual(jasmine.any(Binder));
     });
 
-    xit("should create a default binder", function () {
+    it("should create a default binder", function () {
       expect(index()).toEqual(jasmine.any(Binder));
     });
   });
