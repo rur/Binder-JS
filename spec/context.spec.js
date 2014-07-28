@@ -5,21 +5,38 @@ var when = require("when");
 describe("Context", function () {
   var cxt;
   beforeEach(function () {
-    cxt = new Context();
+    cxt = new Context({mock: 'syntax'}, [], []);
     cxt.test = "value";
   });
 
-  it("should have an array of filters", function () {
-    expect(cxt.filters).toEqual(jasmine.any(Array));
-  });
+  describe("native fields", function () {
 
-  it("should have an array of parsers", function () {
-    expect(cxt.parsers).toEqual(jasmine.any(Array));
+    it("should have an array of filters", function () {
+      expect(cxt.filters).toEqual(jasmine.any(Array));
+    });
+
+    it("should have an array of parsers", function () {
+      expect(cxt.parsers).toEqual(jasmine.any(Array));
+    });
+
+    it("should have a mock syntax", function () {
+      expect(cxt.syntax).toEqual({mock: "syntax"});
+    });
+
+    it("should not be enumerable ", function () {
+      expect(Object.keys(cxt)).toEqual(['test']);
+    });
+
+    it("should not allow those properties to be overloaded", function () {
+      cxt.syntax = "anything else";
+      expect(cxt.syntax).not.toEqual("anything else");
+    });
   });
 
   describe("#dup", function () {
     var dup;
     beforeEach(function () {
+      cxt.parsers.push({mock: "parser"});
       dup = cxt.dup();
     });
 
