@@ -1,43 +1,30 @@
 var path = require("path");
 var fs = require("fs");
-var Definition = require("../../lib/definition");
+var Syntax = require("../../lib/syntax");
 var Context = require("../../lib/context");
 var Binder = require("../../lib/binder");
-var index = require("../../index");
 
+var dfaultDef = require('../../lib/binders/default')();
 var fsReader = require('../../lib/binders/fs-reader');
 
 var fixturesDir = path.resolve(__dirname, "../fixtures");
 
 describe("binders/fs-reader", function () {
 
-  var def;
+  var binder;
   beforeEach(function () {
-    def = fsReader();
-  });
-
-  it("should create a definition", function () {
-    expect(def).toEqual(jasmine.any(Definition));
+    var def = fsReader(),
+        syn = new Syntax(),
+        cxt = new Context(syn, [], []);
+    binder = new Binder(cxt);
+    dfaultDef.buildSyntax(syn);
+    dfaultDef.initialize(binder);
+    def.buildSyntax(syn);
+    def.initialize(binder);
   });
 
   describe("conditions", function() {
-    it("should add an ignore parse handler", function () {
-      expect(def.parsers.readUTF.name).toEqual("readUTF");
-    });
-
-    it("should have a file condition", function () {
-      expect(def.conditions.file.name).toEqual("file");
-    });
-
     describe("route", function() {
-      var binder;
-      beforeEach(function() {
-        var cxt = new Context();
-        cxt._syntax = def.buildSyntax();
-        binder = new Binder(cxt);
-        def.initialize(binder);
-      });
-
       it("should select by route", function (done) {
         binder.parse
           .route("./otherSubDir/sibling/*")
@@ -50,16 +37,14 @@ describe("binders/fs-reader", function () {
           done();
         },
         getFailSpy(this, done, "reject"));
-
       });
     });
   });
 
   describe("parsing", function () {
-    var binder, res, rej, cxt;
+    var res, rej, cxt;
     beforeEach(function () {
-      binder = index(def);
-      //
+      cxt = binder.context;
       res = jasmine.createSpy("Resolve Handler");
       rej = jasmine.createSpy("Reject Handler");
     });
@@ -181,9 +166,8 @@ describe("binders/fs-reader", function () {
       it("should parse a txt file", function (done) {
         var spec = this;
         binder.compile(path.resolve(fixturesDir, "test.txt")).then(function (reason) {
-          done();
           expect(reason).toEqual("this is a test file");
-        }, getFailSpy(this, done, "reject"));
+        }).then(done, done);
       });
 
       it("should allow a new rule be defined with an after handler", function (done) {
@@ -191,45 +175,34 @@ describe("binders/fs-reader", function () {
           return data + "; until this custom parser was added!";
         });
         binder.compile(path.resolve(fixturesDir, "nestedData/someFile.skip")).then(function (data) {
-          done();
           expect(data).toEqual("unknown file; until this custom parser was added!");
-        }, getFailSpy(this, done, "reject"));
+        }).then(done, done);
       });
     });
 
     describe("folder parser", function () {
       it("should parse a folders data", function (done) {
         binder.compile(path.resolve(fixturesDir, "simpleDir/")).then( function (data) {
-          done();
           expect(data).toEqual({
             "test.txt": "this is a test file in a folder"
           });
-        }, getFailSpy(this, done, "reject"));
+        }).then(done, done);
       });
 
       it("should handle empty folders", function (done) {
         var spec = this;
-        fs.mkdirSync(path.resolve(fixturesDir, "emptyDir/"));
-
-        function cleanUp() {
-          done();
-          fs.rmdirSync(path.resolve(fixturesDir, "emptyDir/"));
-        }
 
         binder.compile(path.resolve(fixturesDir, "emptyDir/")).then( function (data) {
-          cleanUp();
           expect(data).toEqual({});
         }, function (reason) {
-          cleanUp();
           spec.fail("failed to compile empty directory, reason: " + reason);
-        });
+        }).then(done, done);
       });
 
       it("should handle a null directory", function (done) {
         binder.compile(path.resolve(fixturesDir, "nullDir/")).then( function (data) {
-          done();
           expect(data).toEqual({});
-        }, getFailSpy(this, done, "reject"));
+        }).then(done, done);
       });
 
       describe("nested data", function () {
@@ -240,16 +213,14 @@ describe("binders/fs-reader", function () {
 
         it("should parse a nested dir", function (done) {
           compiled.then(function (data) {
-                  done();
                   expect(data.subDir).toEqual({"test.txt": "this is another text file inside a sub directory"});
-                }, getFailSpy(this, done, "reject"));
+                }).then(done, done);
         });
 
         it("should skip unknown file type", function (done) {
           compiled.then(function (data) {
-                  done();
                   expect(data["someFile.skip"]).toBeUndefined();
-                }, getFailSpy(this, done, "reject"));
+                }).then(done, done);
         });
       });
     });
