@@ -1,11 +1,15 @@
 var mkdefault = require('../../lib/binders/default');
 var Definition = require("../../lib/definition");
+var Syntax = require("../../lib/syntax");
+var Context = require("../../lib/context");
+var Binder = require("../../lib/binder");
 
 describe("binders/default", function () {
   var def;
   beforeEach(function () {
     def = mkdefault();
   });
+
   it("should create a definition", function () {
     expect(def).toEqual(jasmine.any(Definition));
   });
@@ -23,12 +27,15 @@ describe("binders/default", function () {
   describe("in a binder", function () {
     var binder;
     beforeEach(function () {
-      var index = require("../../index");
-      var def = index.define('test');
-      def.parser("test", function () {
-        return "test parser";
+      var syn = new Syntax(),
+          cxt = new Context(syn, [], []);
+      binder = new Binder(cxt);
+
+      def.parser('test', function () {
+        return 'test parser';
       });
-      binder = index(def);
+      def.buildSyntax(syn);
+      def.initialize(binder);
     });
 
     it("should have ignore command in the syntax", function () {
