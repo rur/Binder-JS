@@ -19,8 +19,7 @@ describe("scanner#scan", function() {
           getFailSpy(this, done, 'resolve'),
           function (error) {
             expect(error.message).toEqual("No parser found");
-            done();
-          });
+          }).then(done, done);
     });
 
     it("should get the data from the parser function", function (done) {
@@ -40,11 +39,7 @@ describe("scanner#scan", function() {
           ]
         }).then(function (data) {
           expect(data).toEqual("some data");
-          done();
-        }, function (reason) {
-          expect(reason.toString()).toEqual("not to happen!");
-          done();
-        });
+        }).then(done, done);
     });
 
     it("should get data from a file", function (done) {
@@ -60,8 +55,7 @@ describe("scanner#scan", function() {
         ]
       }).then(function (data) {
         expect(data).toEqual("this is a test file");
-        done();
-      }, getFailSpy(this, done, "reject"));
+      }).then(done, done);
     });
 
     it("should pass a file read error onto the reject handler", function (done) {
@@ -77,8 +71,7 @@ describe("scanner#scan", function() {
         ]
       }).then(null, function (data) {
         expect(data.toString()).toEqual("Error: ENOENT, open 'non-existent-file.txt'");
-        done();
-      });
+      }).then(done, done);
     });
 
     it("should test last in parsers first", function (done) {
@@ -95,8 +88,7 @@ describe("scanner#scan", function() {
       scanner.scan(fp, cx).then(function (d) {
         expect(d).toEqual("data");
         expect(spy).wasCalled();
-        done();
-      });
+      }).then(done, done);
     });
   });
 
@@ -114,11 +106,10 @@ describe("scanner#scan", function() {
     it("should call a filter on a file", function (done) {
       scanner.scan(fp, cxt).then(function () {
         expect(filter).wasCalledWith(fp, cxt);
-        done();
-      }, getFailSpy(this, done, "reject"));
+      }).then(done, done);
     });
 
-    it("should reject the scanner promise", function() {
+    it("should reject the scanner promise", function(done) {
       var rejSpy = jasmine.createSpy("Error handler");
       cxt.filters[0] = function () {
         return when.reject("test error");
@@ -126,8 +117,7 @@ describe("scanner#scan", function() {
       scanner.scan(fp, cxt).then(null, function (reason) {
         expect(reason.toString()).toEqual("test error");
         expect(parse).not.toHaveBeenCalled();
-        done();
-      });
+      }).then(done, done);
     });
 
     it("should handle an error", function (done) {
@@ -138,8 +128,7 @@ describe("scanner#scan", function() {
       scanner.scan(fp, cxt).then(null, function (reason) {
         expect(reason.toString()).toEqual("some error");
         expect(parse).not.toHaveBeenCalled();
-        done();
-      });
+      }).then(done, done);
     });
 
     it("should cause file to be ignored", function (done) {
@@ -150,8 +139,7 @@ describe("scanner#scan", function() {
       scanner.scan(fp, cxt).then(null, function (reason) {
         expect(reason).not.toBeDefined();
         expect(parse).not.toHaveBeenCalled();
-        done();
-      });
+      }).then(done, done);
     });
 
     it("should call filters in the order they were defined", function (done) {
@@ -160,11 +148,10 @@ describe("scanner#scan", function() {
         c.test = "value";
       });
       spy.andCallFake(function(p, c) {
-        done();
         expect(c.test).toEqual("value");
       });
       cxt.filters.push(spy);
-      scanner.scan(fp, cxt);
+      scanner.scan(fp, cxt).then(done, done);
     });
 
     it("should handle filters asynchronously", function (done) {
@@ -176,10 +163,9 @@ describe("scanner#scan", function() {
       });
       spy.andCallFake(function(p, c) {
         expect(c.test).toEqual("value");
-        done();
       });
       cxt.filters.push(spy);
-      scanner.scan(fp, cxt);
+      scanner.scan(fp, cxt).then(done, done);
     });
   });
 
@@ -191,8 +177,7 @@ describe("scanner#scan", function() {
         })
       ]}, 10).then(null, function (err) {
         expect(err.toString()).toEqual("Error: timed out after 10ms");
-        done();
-      });
+      }).then(done, done);
     });
   });
 });
