@@ -103,14 +103,14 @@ describe("Binder", function() {
         binder.parse.action;
         expect(function () {
           binder.compile("FAIL");
-        }).toThrow("Cannot compile parser, invalid rule statement[0]: 'action'");
+        }).toThrow("Cannot compile parser, invalid rule statement[1]: 'action'");
       });
 
       it("should catch an invalid word", function () {
         binder.parse.action.test;
         expect(function () {
           binder.compile("FAIL");
-        }).toThrow("Cannot compile parser, invalid rule statement[0]: 'action test'");
+        }).toThrow("Cannot compile parser, invalid rule statement[1]: 'action test'");
       });
 
       it("should add default params to procs", function () {
