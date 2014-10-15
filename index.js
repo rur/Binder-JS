@@ -62,7 +62,7 @@ jsBinder.loadDef = function loadDef(name) {
  */
 function _createBinder(setup) {
   var syn = new Syntax(),
-      cxt = new Context(syn, [], []),
+      cxt = new Context(syn),
       binder = new Binder(cxt);
 
   function fromDef(name) {

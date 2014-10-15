@@ -70,7 +70,7 @@ describe("binders/fs-reader", function () {
         it("should reject with an error if a value is not a valid path", function (done) {
           binder.compile("some/invalid/path")
             .then(getFailSpy(this, done, "resolve"), function (reason) {
-              expect(reason.toString()).toEqual("Error: ENOENT, stat 'some/invalid/path'");
+              expect(reason.reason.toString()).toEqual("Error: ENOENT, stat 'some/invalid/path'");
             }).then(done, done);
         });
 
@@ -121,9 +121,9 @@ describe("binders/fs-reader", function () {
         binder.compile(path.resolve(fixturesDir, "nestedData/someFile.skip"))
           .then(
             getFailSpy(this, done, 'resolve'),
-            function (reason) {
+            function (excp) {
               done();
-              expect(reason.toString()).toEqual("Error: test error");
+              expect(excp.reason.toString()).toEqual("Error: test error");
             });
       });
 
@@ -139,12 +139,8 @@ describe("binders/fs-reader", function () {
         it("should allow the limit to be lowered", function (done) {
           binder.context.fileScanLimit.max = 10;
           binder.compile(path.resolve(fixturesDir, "nestedData/someFile.skip"))
-            .then(getFailSpy(this, done, "resolve"), function (reason) {
-              if (!(reason instanceof Error)) {
-                done("limit was not reached");
-                return;
-              };
-              expect(reason.toString()).toEqual("Error: File Scan limit reached");
+            .then(getFailSpy(this, done, "resolve"), function (excp) {
+              expect(excp.reason.toString()).toEqual("Error: File Scan limit reached");
               done();
             })
         });

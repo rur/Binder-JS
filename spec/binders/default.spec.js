@@ -52,7 +52,8 @@ describe("binders/default", function () {
 
     describe("route", function () {
       beforeEach(function () {
-        binder.context.route = ["a", 'b'];
+        binder.context.route.push('a');
+        binder.context.route.push('b');
       });
 
       it("should match a route glob", function (done) {

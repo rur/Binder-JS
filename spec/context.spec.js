@@ -5,7 +5,11 @@ var when = require("when");
 describe("Context", function () {
   var cxt;
   beforeEach(function () {
-    cxt = new Context({mock: 'syntax'}, [], []);
+    cxt = new Context({mock: 'syntax'}, {
+      filters: [],
+      parsers: [],
+      route: []
+    });
     cxt.test = "value";
   });
 
@@ -33,37 +37,37 @@ describe("Context", function () {
     });
   });
 
-  describe("#dup", function () {
-    var dup;
+  describe("#child", function () {
+    var child;
     beforeEach(function () {
       cxt.parsers.push({mock: "parser"});
-      dup = cxt.dup();
+      child = cxt.child();
     });
 
     it("should create Context instance", function () {
-      expect(dup).toEqual(jasmine.any(Context));
+      expect(child).toEqual(jasmine.any(Context));
     });
 
     it("should copy the filters array", function () {
-      expect(dup.filters[0]).toBe(cxt.filters[0]);
+      expect(child.filters[0]).toBe(cxt.filters[0]);
     });
 
     it("should allow the filters to be appended to independently", function () {
-      dup.filters.push("test");
+      child.filters.push("test");
       expect(cxt.filters).not.toContain("test");
     });
 
     it("should copy the parsers array", function () {
-      expect(dup.parsers[0]).toBe(cxt.parsers[0]);
+      expect(child.parsers[0]).toBe(cxt.parsers[0]);
     });
 
     it("should allow the parsers to be appended to independently", function () {
-      dup.parsers.push("test");
+      child.parsers.push("test");
       expect(cxt.parsers).not.toContain("test");
     });
 
     it("should copy fields applied", function () {
-      expect(dup.test).toEqual("value");
+      expect(child.test).toEqual("value");
     });
   });
 });
